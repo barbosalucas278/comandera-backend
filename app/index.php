@@ -22,17 +22,20 @@ $app = AppFactory::create();
 // Add error middleware
 $app->addErrorMiddleware(true, true, true);
 
-
-// Routes
 $app->group('/usuarios', function (RouteCollectorProxy $group) {
-  $group->get('[/]', \UsuarioController::class . ':TraerTodos');
-  $group->get('/{usuario}', \UsuarioController::class . ':TraerUno');
+
+  $group->get('[/]', \UsuarioController::class . ':traerTodos');
+
+  $group->get('/{id}', \UsuarioController::class . ':traerUno');
+
+  //$group->post('/login', \Usuario::class . ':Login');
+
   $group->post('[/]', \UsuarioController::class . ':CargarUno');
+
+  $group->delete('[/]', \UsuarioController::class . ':BorrarUno');
+
+  $group->put('[/]', \UsuarioController::class . ':ModificarUno');
 });
 
-$app->get('[/]', function (Request $request, Response $response) {
-  $response->getBody()->write("Slim Framework 4 PHP");
-  return $response;
-});
 
 $app->run();

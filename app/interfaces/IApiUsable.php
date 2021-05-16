@@ -1,9 +1,13 @@
 <?php
+
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+
 interface IApiUsable
 {
-	public function TraerUno($request, $response, $args);
-	public function TraerTodos($request, $response, $args);
-	public function CargarUno($request, $response, $args);
-	public function BorrarUno($request, $response, $args);
-	public function ModificarUno($request, $response, $args);
+	public function TraerUno(Request $request, Response $response);
+	public function TraerTodos(Request $request, Response $response);
+	public function CargarUno(Request $request, Response $response, $args);
+	public function BorrarUno(Request $request, Response $response);
+	public function ModificarUno(Request $request, Response $response);
 }
