@@ -1,5 +1,5 @@
 <?php
-require_once "db\AccesoDatos.php";
+require_once "app/app/db/AccesoDatos.php";
 class Usuario
 {
     public $Id;
