@@ -8,7 +8,7 @@ require_once './interfaces/IApiUsable.php';
 require_once './utilities/Validacion.php';
 class UsuarioController extends Usuario implements IApiUsable
 {
-  public function CargarUno(Request $request, Response $response, $args)
+  public function CargarUno(Request $request, Response $response, array $args)
   {
     try {
       $datosIngresados = $request->getParsedBody();
@@ -34,9 +34,8 @@ class UsuarioController extends Usuario implements IApiUsable
       $tipoUsuarioId = $datosIngresados["tipoUsuarioId"];
       $sectorId = $datosIngresados["sectorId"];
       $mail = $datosIngresados["mail"];
-      $fechaDeRegistro = date("y-m-d");
       $newUsuario = new Usuario();
-      $newUsuario->MapeoUsuario($sectorId, $nombre, $apellido, $clave, $mail, $fechaDeRegistro, $tipoUsuarioId);
+      $newUsuario->MapeoUsuario($nombre, $apellido, $clave, $mail, $tipoUsuarioId, $sectorId);
       if ($newUsuario->GuardarUsuario()) {
         $payload = json_encode(array("Resultado" => "Agregado"));
       }
@@ -54,11 +53,11 @@ class UsuarioController extends Usuario implements IApiUsable
     }
   }
 
-  public function TraerUno(Request $request, Response $response)
+  public function TraerUno(Request $request, Response $response, $args)
   {
     try {
-      $datosIngresados = $request->getParsedBody();
-      $id = $datosIngresados["id"];
+      //Los datos ingresados por la url se buscan en args
+      $id = $args["id"];
       $datos = json_encode(array(Usuario::FindById($id)));
       $response->getBody()->write($datos);
       return $response
@@ -72,10 +71,10 @@ class UsuarioController extends Usuario implements IApiUsable
     }
   }
 
-  public function TraerTodos(Request $request, Response $response)
+  public function TraerTodos(Request $request, Response $response, array $args)
   {
     try {
-      $datos = json_encode(array(Usuario::GetAll()));
+      $datos = json_encode(Usuario::GetAll());
       $response->getBody()->write($datos);
       return $response
         ->withHeader('Content-Type', 'applocation/json')
@@ -88,9 +87,10 @@ class UsuarioController extends Usuario implements IApiUsable
     }
   }
 
-  public function ModificarUno(Request $request, Response $response)
+  public function ModificarUno(Request $request, Response $response, array $args)
   {
     $datosIngresados = $request->getParsedBody();
+    var_dump($datosIngresados);
     if (
       !isset($datosIngresados["nombre"])
       || !isset($datosIngresados["apellido"])
@@ -128,18 +128,17 @@ class UsuarioController extends Usuario implements IApiUsable
     }
   }
 
-  public function BorrarUno(Request $request, Response $response)
+  public function BorrarUno(Request $request, Response $response, $args)
   {
-    $datosIngresados = $request->getParsedBody();
-    if (!isset($datosIngresados["id"])) {
-      $error = json_encode(array("Error" => "Datos incompletos"));
-      $response->getBody()->write($error);
-      return $response
-        ->withHeader('Content-Type', 'applocation/json')
-        ->withStatus(404);
-    }
     try {
-      $id = $datosIngresados["id"];
+      if (!isset($args["id"])) {
+        $error = json_encode(array("Error" => "Datos incompletos"));
+        $response->getBody()->write($error);
+        return $response
+          ->withHeader('Content-Type', 'applocation/json')
+          ->withStatus(404);
+      }
+      $id = $args["id"];
       if (Usuario::BorrarUsuario($id)) {
         $datos = json_encode(array("Resultado" => "Borrado con exito"));
         $response->getBody()->write($datos);

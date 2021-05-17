@@ -7,8 +7,19 @@ class AccesoDatos
     private function __construct()
     {
         try {
-            $this->objetoPDO = new PDO('mysql:host=' . getenv('MYSQL_HOST') . ';dbname=' . getenv('MYSQL_DB') . ';charset=utf8', getenv('MYSQL_USER'), getenv('MYSQL_PASS'), array(PDO::ATTR_EMULATE_PREPARES => false, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
-            $this->objetoPDO->exec("SET CHARACTER SET utf8");
+            $this->objetoPDO = new PDO(
+                'mysql:host=' . getenv('MYSQL_HOST') . ';dbname=' . getenv('MYSQL_DB') . ';port=' . getenv('MYSQL_PORT') . ';charset=utf8',
+                getenv('MYSQL_USER'),
+                getenv('MYSQL_PASS'),
+                array(PDO::ATTR_EMULATE_PREPARES => false, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION)
+            );
+            /*$this->objetoPDO = new PDO(
+                'mysql:host=' . MYSQL_HOST . ';dbname=' . MYSQL_DB . ';charset=utf8',
+                MYSQL_USER,
+                MYSQL_PASS,
+                array(PDO::ATTR_EMULATE_PREPARES => false, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION)
+            );*/
+            //$this->objetoPDO->exec("SET CHARACTER SET utf8");
         } catch (PDOException $e) {
             print "Error: " . $e->getMessage();
             die();

@@ -1,10 +1,12 @@
 <?php
-require_once "app/app/db/AccesoDatos.php";
+require_once './utilities/Debugger.php';
 class Usuario
 {
     public $Id;
     public $SectorId;
+    public $SectorNombre;
     public $EstadoUsuarioId;
+    public $EstadoUsuario;
     public $Nombre;
     public $Apellido;
     public $Clave;
@@ -15,26 +17,27 @@ class Usuario
     public $UsuarioModificacion;
     public $UsuarioAlta;
     public $TipoUsuarioId;
+    public $TipoUsuario;
 
     public function __construct()
     {
     }
 
     public function MapeoUsuario(
-        $sectorId,
         $nombre,
         $apellido,
         $clave,
         $mail,
-        $fechaCreacion = null,
         $tipoUsuarioId = null,
+        $sectorId = null,
+        $fechaCreacion = null,
         $fechaUltimaModificacion = null,
         $estadoUsuarioId = null,
         $fechaBaja = null,
         $usuarioModificacion = null,
         $usuarioAlta = null
     ) {
-        $this->TipoUsuarioID = $tipoUsuarioId;
+        $this->TipoUsuarioId = $tipoUsuarioId;
         $this->SectorId = $sectorId;
         $this->EstadoUsuarioId = $estadoUsuarioId;
         $this->Nombre = $nombre;
@@ -108,7 +111,7 @@ class Usuario
                 $usuarioDB->SetMail($usuarioModificado->Mail);
                 $usuarioDB->SetSectorId($usuarioModificado->SectorId);
                 $acceso = AccesoDatos::GetAccesoDatos();
-                $consulta = $acceso->RetornarConsulta("UPDATE Usuario SET
+                $consulta = $acceso->prepararConsulta("UPDATE Usuario SET
                 Nombre = :nombre,
                 Apellido = :apellido,
                 Clave = :clave,
@@ -131,7 +134,7 @@ class Usuario
             throw new Exception("No se pudo modificar, " . $ex->getMessage(), 0, $ex);
         }
     }
-    public static function FindByMailAndNombre($mail, $nombre)
+    public static function FindBySector($sectorId)
     {
         try {
             $acceso = AccesoDatos::GetAccesoDatos();
@@ -142,7 +145,7 @@ class Usuario
                 clave AS Clave,
                 mail AS Mail,
                 fecha_de_registro AS FechaDeRegistro,
-                localidad AS Localidad FROM usuario  WHERE mail = '$mail' AND nombre = '$nombre'");
+                localidad AS Localidad FROM usuario  WHERE SectorId = $sectorId");
             $consulta->execute();
             $usuarioEncontrado = $consulta->fetchObject('Usuario');
             if (isset($usuarioEncontrado)) {
@@ -162,31 +165,38 @@ class Usuario
                 throw new Exception("El id no puede ser vacio");
             }
             $acceso = AccesoDatos::GetAccesoDatos();
-            $consulta = $acceso->RetornarConsulta("SELECT 
-                Id AS Id,
-                SectorId AS SectorId, 
-                EstadoUsuarioId AS EstadoUsuarioId, 
-                Nombre AS Nombre,
-                Apellido AS Apellido,
-                Clave AS Clave,
-                Mail AS Mail,
-                FechaCreacion AS FechaCreacion,
-                FechaUltimaModificacion AS FechaUltimaModificacion,
-                FechaBaja AS FechaBaja,
-                UsuarioModificacion AS UsuarioModificacion,
-                UsuarioAlta AS UsuarioAlta,
-                TipoUsuarioId AS TipoUsuarioId,
-                FROM Usuario  WHERE Id = :id");
+            $consulta = $acceso->prepararConsulta("SELECT                 
+            Usuario.Id AS Id,
+            SectorId AS  SectorId, 
+            Sector.Detalle AS SectorNombre,
+            EstadoUsuarioId AS EstadoUsuarioId,
+            EstadoUsuario.Detalle AS EstadoUsuario,           
+            Nombre AS Nombre,
+            Apellido AS Apellido,
+            Clave AS Clave,
+            Mail AS Mail,
+            FechaCreacion AS FechaCreacion,
+            FechaultimaModificacion AS FechaultimaModificacion,
+            FechaBaja AS FechaBaja,
+            UsuarioModificacion AS UsuarioModificacion,
+            UsuarioAlta AS UsuarioAlta,
+            TipoUsuarioId AS TipoUsuarioId,
+            TipoUsuario.Detalle AS TipoUsuario
+             FROM Usuario 
+                INNER JOIN Sector ON Usuario.SectorId = Sector.Id
+                 INNER JOIN TipoUsuario ON Usuario.TipoUsuarioId = TipoUsuario.Id
+                 INNER JOIN EstadoUsuario ON Usuario.EstadoUsuarioId = EstadoUsuario.Id 
+                 WHERE Usuario.Id = :id;");
             $consulta->bindValue(':id', $id, PDO::PARAM_INT);
             $consulta->execute();
             $usuarioEncontrado = $consulta->fetchObject('Usuario');
-            if (isset($usuarioEncontrado)) {
+            if (isset($usuarioEncontrado) && $usuarioEncontrado) {
                 return $usuarioEncontrado;
             } else {
                 throw new Exception("No se encontró el usuario");
             }
         } catch (Exception $ex) {
-            throw new Exception($ex->getMessage(), $ex);
+            throw new Exception($ex->getMessage(), $ex->getCode(), $ex);
         }
     }
     public static function GetAll()
@@ -194,14 +204,27 @@ class Usuario
         try {
             $acceso = AccesoDatos::GetAccesoDatos();
             $arrayUsuarios = array();
-            $consulta = $acceso->RetornarConsulta("SELECT 
-                id AS Id,
-                nombre AS Nombre,
-                apellido AS Apellido,
-                clave AS Clave,
-                mail AS Mail,
-                fecha_de_registro AS FechaDeRegistro,
-                localidad AS Localidad FROM usuario");
+            $consulta = $acceso->prepararConsulta("SELECT                 
+                Usuario.Id AS Id,
+                SectorId AS  SectorId, 
+                Sector.Detalle AS SectorNombre,
+                EstadoUsuarioId AS EstadoUsuarioId,
+                EstadoUsuario.Detalle AS EstadoUsuario,           
+                Nombre AS Nombre,
+                Apellido AS Apellido,
+                Clave AS Clave,
+                Mail AS Mail,
+                FechaCreacion AS FechaCreacion,
+                FechaultimaModificacion AS FechaultimaModificacion,
+                FechaBaja AS FechaBaja,
+                UsuarioModificacion AS UsuarioModificacion,
+                UsuarioAlta AS UsuarioAlta,
+                TipoUsuarioId AS TipoUsuarioId,
+                TipoUsuario.Detalle AS TipoUsuario
+                 FROM Usuario 
+                 INNER JOIN Sector ON Usuario.SectorId = Sector.Id
+                 INNER JOIN TipoUsuario ON Usuario.TipoUsuarioId = TipoUsuario.Id
+                 INNER JOIN EstadoUsuario ON Usuario.EstadoUsuarioId = EstadoUsuario.Id;");
             $consulta->execute();
             $array = $consulta->fetchAll(PDO::FETCH_CLASS, "Usuario");
             if (is_null($array)) {
@@ -219,22 +242,24 @@ class Usuario
     {
         try {
             $usuarioalta = "Lucas"; //Provisorio
+            $fechaDeRegistro = date("y-m-d");
+            $estadoUsuarioId = 2;
             $acceso = AccesoDatos::GetAccesoDatos();
-            $consulta = $acceso->RetornarConsulta("INSERT 
+            $consulta = $acceso->prepararConsulta("INSERT 
             INTO Usuario(SectorId,EstadoUsuarioId,Nombre, Apellido, Clave, Mail, FechaCreacion,TipoUsuarioId,UsuarioAlta) 
-            VALUES (:sectorId,:estadoUsuarioID,:nombre,:apellido,:clave,:mail,:fechaCreacion,:tipoUsuarioID,:usuarioAlta);");
+            VALUES (:sectorId,:estadoUsuarioID,:nombre,:apellido,:clave,:mail,:fechaCreacion,:tipoUsuarioId,:usuarioAlta);");
             $consulta->bindValue(':sectorId', $this->SectorId, PDO::PARAM_INT);
-            $consulta->bindValue(':estadoUsuarioID', $this->EstadoUsuarioId, PDO::PARAM_INT);
+            $consulta->bindValue(':estadoUsuarioID', $estadoUsuarioId, PDO::PARAM_INT);
             $consulta->bindValue(':nombre', $this->Nombre, PDO::PARAM_STR);
             $consulta->bindValue(':apellido', $this->Apellido, PDO::PARAM_STR);
             $consulta->bindValue(':clave', $this->Clave, PDO::PARAM_STR);
             $consulta->bindValue(':mail', $this->Mail, PDO::PARAM_STR);
-            $consulta->bindValue(':fechaCreacion', $this->fechaCreacion, PDO::PARAM_STR);
-            $consulta->bindValue(':tipoUsuarioID', $this->TipoUsuarioId, PDO::PARAM_INT);
+            $consulta->bindValue(':fechaCreacion', $fechaDeRegistro, PDO::PARAM_STR);
+            $consulta->bindValue(':tipoUsuarioId', $this->TipoUsuarioId, PDO::PARAM_INT);
             $consulta->bindValue(':usuarioAlta', $usuarioalta, PDO::PARAM_STR);
             return $consulta->execute();
         } catch (Exception $th) {
-            throw new Exception("No agrego correctamente " . $th->getMessage() . $this->Clave, 1, $th);
+            throw new Exception("No agrego correctamente " . $th->getMessage(), 1, $th);
         }
     }
 
@@ -243,7 +268,7 @@ class Usuario
         try {
             if (Usuario::FindById($id)) {
                 $acceso = AccesoDatos::GetAccesoDatos();
-                $consulta = $acceso->RetornarConsulta("DELETE FROM usuario WHERE id = :id");
+                $consulta = $acceso->prepararConsulta("DELETE FROM Usuario WHERE Id = :id");
                 $consulta->bindValue(':id', $id, PDO::PARAM_INT);
                 return $consulta->execute();
             } else {
