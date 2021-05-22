@@ -11,9 +11,6 @@ use Slim\Routing\RouteCollectorProxy;
 use Slim\Routing\RouteContext;
 
 require __DIR__ . '/../vendor/autoload.php';
-//Carga de las variables de entorno , luego usar $_ENV para poder visualizarlas TODO: agregar a la wiki
-$dotenv = Dotenv\Dotenv::createImmutable("../");
-$dotenv->load();
 
 require_once './db/AccesoDatos.php';
 require_once './middlewares/MWAutenticar.php';

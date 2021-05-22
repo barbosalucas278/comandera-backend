@@ -206,7 +206,7 @@ class UsuarioController extends Usuario implements IApiUsable
       "data" => $datos,
       "app" => 'La Comanda'
     );
-    return JWT::encode($payload, $_ENV['SECRET_KEY']);
+    return JWT::encode($payload, getenv('SECRET_KEY'));
   }
   public static function Aud()
   {

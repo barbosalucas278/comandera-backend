@@ -32,7 +32,7 @@ class MWAutenticar
             throw new Exception("El token se encuentra vacio");
         }
         try {
-            $tokenDecodificado = JWT::decode($token, $_ENV['SECRET_KEY'], [$_ENV['TIPO_ENCRYP']]);
+            $tokenDecodificado = JWT::decode($token, getenv('SECRET_KEY'), [getenv('TIPO_ENCRYP')]);
         } catch (Exception $ex) {
             throw $ex;
         }
