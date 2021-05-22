@@ -13,11 +13,7 @@ class MWAutenticar
             if (empty($request->getHeaderLine('Authorization'))) {
                 throw new Exception("Falta token de autorización");
             }
-            var_dump($request->getHeaderLine('Authorization'));
-            //el token viaja en el header como un string "Bearer ...token"
             $header = $request->getHeaderLine('Authorization');
-            //primero le hacemos un explode para transformar ese string en un array, y ponemos como delimitador "Bearer"
-            //luego un trim para volver a unir ese array en un string propiamente dicho, sin la palabra "Bearer", solamente el token
             $token = trim(explode("Bearer", $header)[1]);
             self::VerificarToken($token);
             $response = $handler->handle($request);
