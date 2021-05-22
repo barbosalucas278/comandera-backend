@@ -4,6 +4,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 require_once './models/Mesa.php';
+require_once './models/DataTable.php';
 require_once './interfaces/IApiUsable.php';
 class MesaController extends Mesa implements IApiUsable
 {
@@ -24,6 +25,7 @@ class MesaController extends Mesa implements IApiUsable
             return $response->withHeader('Content-Type', 'applocation/json')->withStatus(500);
         }
     }
+
     public function TraerTodos(Request $request, Response $response, array $args)
     {
         try {

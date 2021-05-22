@@ -2,6 +2,7 @@
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Firebase\JWT\JWT;
 
 require_once './models/Usuario.php';
 require_once './interfaces/IApiUsable.php';
@@ -153,12 +154,15 @@ class UsuarioController extends Usuario implements IApiUsable
       return $response->withHeader('Content-Type', 'applocation/json')->withStatus(500);
     }
   }
-  /*public function Login(Request $request, Response $response)
+  public function Login(Request $request, Response $response)
   {
     $datosIngresados = $request->getParsedBody();
     if (!isset($datosIngresados["clave"]) && !Validacion::EsMail($datosIngresados["mail"])) {
-      $error = ["Error" => "Datos incompletos"];
-      return $response->withJson($error, 400);
+      $error = json_encode(array("Error" => "Datos incompletos"));
+      $response->getBody()->write($error);
+      return $response
+        ->withHeader('Content-Type', 'applocation/json')
+        ->withStatus(404);
     }
     try {
       $clave = $datosIngresados["clave"];
@@ -168,8 +172,15 @@ class UsuarioController extends Usuario implements IApiUsable
         foreach ($listado as $usuario) {
           if ($usuario->GetMail() == $mail) {
             if (password_verify($clave, $usuario->GetClave())) {
-              $resultado = ["Id" => $usuario->Id];
-              return $response->withJson($resultado, 200);
+              $datos = [
+                "Nombre" => $usuario->Nombre, "Apellido" => $usuario->Apellido, "Mail" => $usuario->Mail,
+                "TipoUsuarioId" => $usuario->TipoUsuarioId, "SectorId" => $usuario->SectorId, "EstadoUsuarioId" => $usuario->EstadoUsuarioId
+              ];
+              $token = self::CrearToken($datos);
+              $response->getBody()->write($token);
+              return $response
+                ->withHeader('Content-Type', 'applocation/json')
+                ->withStatus(200);
             } else {
               throw new Exception("La contraseña es incorrecta");
             }
@@ -183,5 +194,35 @@ class UsuarioController extends Usuario implements IApiUsable
       $response->getBody()->write($datosError);
       return $response->withHeader('Content-Type', 'applocation/json')->withStatus(500);
     }
-  }*/
+  }
+
+  public static function CrearToken($datos)
+  {
+    $timeNow = time();
+    $payload = array(
+      "iat" => $timeNow,
+      "exp" => $timeNow + (63600), // se agregan segundos
+      "aud" => self::Aud(),
+      "data" => $datos,
+      "app" => 'La Comanda'
+    );
+    return JWT::encode($payload, $_ENV['SECRET_KEY']);
+  }
+  public static function Aud()
+  {
+    $aud = '';
+
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+      $aud = $_SERVER['HTTP_CLIENT_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+      $aud = $_SERVER['HTTP_X_FORWARDED_FOR'];
+    } else {
+      $aud = $_SERVER['REMOTE_ADDR'];
+    }
+
+    $aud .= @$_SERVER['HTTP_USER_AGENT'];
+    $aud .= gethostname();
+
+    return sha1($aud);
+  }
 }
