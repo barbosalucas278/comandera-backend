@@ -7,6 +7,7 @@ require_once './models/Producto.php';
 require_once './interfaces/IApiUsable.php';
 class ProductosController extends Producto implements IApiUsable
 {
+
   public function TraerUno(Request $request, Response $response, array $args)
   {
     try {
@@ -42,7 +43,7 @@ class ProductosController extends Producto implements IApiUsable
   public function CargarUno(Request $request, Response $response, array $args)
   {
     try {
-      $datosIngresados = $request->getParsedBody();
+      $datosIngresados = $request->getParsedBody()["body"];
       //Validación de datosIngresados
       if (
         !isset($datosIngresados["codigo"])

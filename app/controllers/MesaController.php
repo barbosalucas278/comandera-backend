@@ -7,6 +7,36 @@ require_once './models/Mesa.php';
 require_once './interfaces/IApiUsable.php';
 class MesaController extends Mesa implements IApiUsable
 {
+    public function CambiarEstado(Request $request, Response $response, array $args)
+    {
+        $datosIngresados = $request->getParsedBody()["body"];
+        if (!isset($datosIngresados["estado"]) || !isset($datosIngresados["mesaId"])) {
+            $error = json_encode(array("Error" => "Datos incompletos"));
+            $response->getBody()->write($error);
+            return $response
+                ->withHeader('Content-Type', 'applocation/json')
+                ->withStatus(404);
+        }
+        try {
+            $id = $datosIngresados["mesaId"];
+            $nuevoEstado = $datosIngresados["estado"];
+            $mesaModificado = new Mesa();
+            $mesaModificado->Id = $id;
+            $mesaModificado->EstadoMesaId = $nuevoEstado;
+            if (Mesa::ModificarEstadoMesa($mesaModificado)) {
+                $datos = json_encode(array("Resultado" => "Modificado con exito"));
+                $response->getBody()->write($datos);
+                return $response
+                    ->withHeader('Content-Type', 'applocation/json')
+                    ->withStatus(200);
+            }
+        } catch (Exception $ex) {
+            $error = $ex->getMessage();
+            $datosError = json_encode(array("Error" => $error));
+            $response->getBody()->write($datosError);
+            return $response->withHeader('Content-Type', 'applocation/json')->withStatus(500);
+        }
+    }
     public function TraerUno(Request $request, Response $response, array $args)
     {
         try {
@@ -24,6 +54,7 @@ class MesaController extends Mesa implements IApiUsable
             return $response->withHeader('Content-Type', 'applocation/json')->withStatus(500);
         }
     }
+
     public function TraerTodos(Request $request, Response $response, array $args)
     {
         try {
@@ -42,7 +73,7 @@ class MesaController extends Mesa implements IApiUsable
     public function CargarUno(Request $request, Response $response, array $args)
     {
         try {
-            $datosIngresados = $request->getParsedBody();
+            $datosIngresados = $request->getParsedBody()["body"];
             //Validación de datosIngresados
             if (!isset($datosIngresados["nroMesa"])) {
                 $error = json_encode(array("Error" => "Datos incompletos"));

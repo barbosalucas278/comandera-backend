@@ -23,6 +23,24 @@ class Mesa
     {
         $this->Codigo = $this->GenerarCodigoMesa($nroMesa);
     }
+
+    public static function ModificarEstadoMesa($MesaModificado)
+    {
+        try {
+            if ($MesaDB = Mesa::FindById($MesaModificado->Id)) {
+                $MesaDB->EstadoMesaId = $MesaModificado->EstadoMesaId;
+                $acceso = AccesoDatos::GetAccesoDatos();
+                $consulta = $acceso->prepararConsulta("UPDATE Mesa SET
+                EstadoMesaId = :estadoMesaId          
+                WHERE Id = :id");
+                $consulta->bindValue(':id', $MesaDB->Id, PDO::PARAM_INT);
+                $consulta->bindValue(':estadoMesaId', $MesaDB->EstadoMesaId, PDO::PARAM_INT);
+                return $consulta->execute();
+            }
+        } catch (Exception $ex) {
+            throw new Exception("No se pudo modificar, " . $ex->getMessage(), 0, $ex);
+        }
+    }
     public function GuardarMesa()
     {
         try {

@@ -9,10 +9,42 @@ require_once './interfaces/IApiUsable.php';
 require_once './utilities/Validacion.php';
 class UsuarioController extends Usuario implements IApiUsable
 {
+  public function CambiarEstado(Request $request, Response $response, array $args)
+  {
+    $datosIngresados = $request->getParsedBody()["body"];
+    if (!isset($datosIngresados["estado"]) || !isset($datosIngresados["usuarioId"])) {
+      $error = json_encode(array("Error" => "Datos incompletos"));
+      $response->getBody()->write($error);
+      return $response
+        ->withHeader('Content-Type', 'applocation/json')
+        ->withStatus(404);
+    }
+    try {
+      $nombreUsuarioModificacion = $request->getParsedBody()["token"]->Nombre;
+      $id = $datosIngresados["usuarioId"];
+      $nuevoEstado = $datosIngresados["estado"];
+      $usuarioModificado = new usuario();
+      $usuarioModificado->Id = $id;
+      $usuarioModificado->EstadoUsuarioId = $nuevoEstado;
+      $usuarioModificado->UsuarioModificacion = $nombreUsuarioModificacion;
+      if (Usuario::ModificarEstadoUsuario($usuarioModificado)) {
+        $datos = json_encode(array("Resultado" => "Modificado con exito"));
+        $response->getBody()->write($datos);
+        return $response
+          ->withHeader('Content-Type', 'applocation/json')
+          ->withStatus(200);
+      }
+    } catch (Exception $ex) {
+      $error = $ex->getMessage();
+      $datosError = json_encode(array("Error" => $error));
+      $response->getBody()->write($datosError);
+      return $response->withHeader('Content-Type', 'applocation/json')->withStatus(500);
+    }
+  }
   public function CargarUno(Request $request, Response $response, array $args)
   {
     try {
-      $datosIngresados = $request->getParsedBody();
+      $datosIngresados = $request->getParsedBody()["body"];
       //Validación de datosIngresados
       if (
         !isset($datosIngresados["nombre"])
@@ -173,6 +205,7 @@ class UsuarioController extends Usuario implements IApiUsable
           if ($usuario->GetMail() == $mail) {
             if (password_verify($clave, $usuario->GetClave())) {
               $datos = [
+                "Id" => $usuario->Id,
                 "Nombre" => $usuario->Nombre, "Apellido" => $usuario->Apellido, "Mail" => $usuario->Mail,
                 "TipoUsuarioId" => $usuario->TipoUsuarioId, "SectorId" => $usuario->SectorId, "EstadoUsuarioId" => $usuario->EstadoUsuarioId
               ];

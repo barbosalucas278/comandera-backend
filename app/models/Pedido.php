@@ -5,17 +5,18 @@ class Pedido
     public $Id;
     public $EstadoPedidoId;
     public $EstadoPedido;
-    public $CodigoMesa;
+    public $MesaId;
     public $CodigoPedido;
     public $ProductoId;
     public $Producto;
+    public $productoTipo;
     public $Cantidad;
     public $Importe;
     public $FechaCreacion;
     public $HorarioCreacion;
-    public $HorarioInicio;
+    public $HorarioInicio; //
     public $TiempoEstipulado;
-    public $HorarioDeEntrega;
+    public $HorarioDeEntrega; //
     public $NombreCliente;
     public $UrlFoto;
 
@@ -23,9 +24,9 @@ class Pedido
     {
     }
 
-    public function MapearPedido($codigoMesa, $productoId, $cantidad, $nombreCliente, $urlFoto)
+    public function MapearPedido($mesaId, $productoId, $cantidad, $nombreCliente, $urlFoto)
     {
-        $this->CodigoMesa = $codigoMesa;
+        $this->MesaId = $mesaId;
         $this->ProductoId = $productoId;
         $this->Cantidad = $cantidad;
         $this->NombreCliente = $nombreCliente;
@@ -40,6 +41,46 @@ class Pedido
             throw new Exception("No se puede calcular el importe " . $ex->getMessage(), 0, $ex);
         }
     }
+    public function CalcularHoras()
+    {
+        if ($this->EstadoPedidoId == 2) {
+            $this->HorarioInicio = date("G:i:s");
+            $this->HorarioEntrega = null;
+        } else {
+            $this->HorarioEntrega = date("G:i:s");
+        }
+    }
+
+    public static function ModificarEstadoPedido($pedidoModificado, $sectorUsuario)
+    {
+        try {
+            if ($pedidoDB = Pedido::FindById($pedidoModificado->Id)) {
+                if ($pedidoDB->ProductoTipo != $sectorUsuario) {
+                    throw new Exception("El no puede tomar el pedido");
+                } else if ($pedidoDB->ProductoTipo == $sectorUsuario || $sectorUsuario == 6) {
+                    $pedidoDB->EstadoPedidoId = $pedidoModificado->EstadoId;
+                    $pedidoDB->TiempoEstipulado = $pedidoModificado->TiempoEstipulado;
+                    $pedidoDB->CalcularHoras();
+                    $acceso = AccesoDatos::GetAccesoDatos();
+                    $consulta = $acceso->prepararConsulta("UPDATE Pedido SET
+                        EstadoPedidoId = :estadoPedidoId,
+                        TiempoEstipulado = :tiempoEstipulado,
+                        HorarioInicio = :horarioInicio,
+                        HorarioDeEntrega = :horarioEntrega                
+                        WHERE Id = :id");
+                    $consulta->bindValue(':id', $pedidoDB->Id, PDO::PARAM_INT);
+                    $consulta->bindValue(':estadoPedidoId', $pedidoDB->EstadoPedidoId, PDO::PARAM_INT);
+                    $consulta->bindValue(':tiempoEstipulado', $pedidoDB->TiempoEstipulado, PDO::PARAM_INT);
+                    $consulta->bindValue(':horarioInicio', $pedidoDB->HorarioInicio, PDO::PARAM_STR);
+                    $consulta->bindValue(':horarioEntrega', $pedidoDB->HorarioEntrega, PDO::PARAM_STR);
+                    return $consulta->execute();
+                }
+            }
+        } catch (Exception $ex) {
+            throw new Exception("No se pudo modificar, " . $ex->getMessage(), 0, $ex);
+        }
+    }
+
     public function GuardarPedido()
     {
         try {
@@ -50,9 +91,9 @@ class Pedido
             $Importe = $this->CalcularImporte();
             $acceso = AccesoDatos::GetAccesoDatos();
             $consulta = $acceso->prepararConsulta("INSERT 
-            INTO Pedido(CodigoMesa,CodigoPedido,ProductoId, Cantidad, Importe, NombreCliente, UrlFoto, FechaCreacion, HorarioCreacion) 
-            VALUES (:codigoMesa,:codigoPedido,:productoId,:cantidad,:importe,:nombreCliente,:urlFoto,:fechaCreacion,:horarioCreacion);");
-            $consulta->bindValue(':codigoMesa', $this->CodigoMesa, PDO::PARAM_STR);
+            INTO Pedido(MesaId,CodigoPedido,ProductoId, Cantidad, Importe, NombreCliente, UrlFoto, FechaCreacion, HorarioCreacion) 
+            VALUES (:MesaId,:codigoPedido,:productoId,:cantidad,:importe,:nombreCliente,:urlFoto,:fechaCreacion,:horarioCreacion);");
+            $consulta->bindValue(':MesaId', $this->MesaId, PDO::PARAM_STR);
             $consulta->bindValue(':codigoPedido', $CodigoPedido, PDO::PARAM_STR);
             $consulta->bindValue(':productoId', $this->ProductoId, PDO::PARAM_INT);
             $consulta->bindValue(':cantidad', $this->Cantidad, PDO::PARAM_INT);
@@ -77,10 +118,11 @@ class Pedido
             Pedido.Id AS Id,
             EstadoPedidoId AS EstadoPedidoId, 
             EstadoPedido.Detalle AS EstadoPedido, 
-            CodigoMesa AS CodigoMesa,            
+            MesaId AS MesaId,            
             CodigoPedido AS CodigoPedido,            
             ProductoId AS ProductoId,            
             Producto.Nombre AS Producto,            
+            Producto.TipoProductoId AS ProductoTipo,            
             Cantidad AS Cantidad,            
             Importe AS Importe,            
             Pedido.FechaCreacion AS FechaCreacion,            
@@ -116,7 +158,7 @@ class Pedido
             Pedido.Id AS Id,
             EstadoPedidoId AS EstadoPedidoId, 
             EstadoPedido.Detalle AS EstadoPedido, 
-            CodigoMesa AS CodigoMesa,            
+            MesaId AS MesaId,            
             CodigoPedido AS CodigoPedido,            
             ProductoId AS ProductoId,            
             Producto.Nombre AS Producto,            

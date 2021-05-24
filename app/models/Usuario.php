@@ -134,6 +134,32 @@ class Usuario
             throw new Exception("No se pudo modificar, " . $ex->getMessage(), 0, $ex);
         }
     }
+    public static function ModificarEstadoUsuario($usuarioModificado)
+    {
+        try {
+            if ($usuarioDB = Usuario::FindById($usuarioModificado->Id)) {
+                if ($usuarioDB->EstadoUsuarioId == 3) {
+                    throw new Exception("El usuario ya está eliminado");
+                }
+                $usuarioDB->EstadoUsuarioId = $usuarioModificado->EstadoUsuarioId;
+                $usuarioDB->FechaUltimaModificacion = date("y-m-d");
+                $usuarioDB->UsuarioModificacion = $usuarioModificado->UsuarioModificacion;
+                $acceso = AccesoDatos::GetAccesoDatos();
+                $consulta = $acceso->prepararConsulta("UPDATE Usuario SET
+                        EstadoUsuarioId = :estadoUsuarioId,
+                        FechaUltimaModificacion = :fechaUltimaModificacion,
+                        UsuarioModificacion = :usuarioModificacion               
+                        WHERE Id = :id");
+                $consulta->bindValue(':id', $usuarioDB->Id, PDO::PARAM_INT);
+                $consulta->bindValue(':estadoUsuarioId', $usuarioDB->EstadoUsuarioId, PDO::PARAM_INT);
+                $consulta->bindValue(':fechaUltimaModificacion', $usuarioDB->FechaUltimaModificacion, PDO::PARAM_STR);
+                $consulta->bindValue(':usuarioModificacion', $usuarioDB->UsuarioModificacion, PDO::PARAM_STR);
+                return $consulta->execute();
+            }
+        } catch (Exception $ex) {
+            throw new Exception("No se pudo modificar, " . $ex->getMessage(), 0, $ex);
+        }
+    }
     public static function FindBySector($sectorId)
     {
         try {
@@ -224,7 +250,8 @@ class Usuario
                  FROM Usuario 
                  INNER JOIN Sector ON Usuario.SectorId = Sector.Id
                  INNER JOIN TipoUsuario ON Usuario.TipoUsuarioId = TipoUsuario.Id
-                 INNER JOIN EstadoUsuario ON Usuario.EstadoUsuarioId = EstadoUsuario.Id;");
+                 INNER JOIN EstadoUsuario ON Usuario.EstadoUsuarioId = EstadoUsuario.Id
+                 WHERE Usuario.EstadoUsuarioId != 3;");
             $consulta->execute();
             $array = $consulta->fetchAll(PDO::FETCH_CLASS, "Usuario");
             if (is_null($array)) {
@@ -267,9 +294,16 @@ class Usuario
     {
         try {
             if (Usuario::FindById($id)) {
+                $estadoEliminado = 3;
+                $fechaBaja = date("y-m-d");
                 $acceso = AccesoDatos::GetAccesoDatos();
-                $consulta = $acceso->prepararConsulta("DELETE FROM Usuario WHERE Id = :id");
+                $consulta = $acceso->prepararConsulta("UPDATE Usuario SET
+                EstadoUsuarioId = :estadoUsuarioId,
+                FechaBaja = :fechaBaja                
+                WHERE Id = :id");
                 $consulta->bindValue(':id', $id, PDO::PARAM_INT);
+                $consulta->bindValue(':estadoUsuarioId', $estadoEliminado, PDO::PARAM_INT);
+                $consulta->bindValue(':fechaBaja', $fechaBaja, PDO::PARAM_STR);
                 return $consulta->execute();
             } else {
                 throw new Exception("No se encontro el usuario");
