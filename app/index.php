@@ -16,7 +16,6 @@ require_once './db/AccesoDatos.php';
 require_once './middlewares/MWAutenticar.php';
 require_once './middlewares/MWAccesos.php';
 require_once './middlewares/MWLogger.php';
-require_once './models/PedidoUsuario.php';
 
 require_once './controllers/UsuarioController.php';
 require_once './controllers/MesaController.php';

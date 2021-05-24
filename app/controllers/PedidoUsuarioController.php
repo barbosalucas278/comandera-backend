@@ -3,6 +3,7 @@
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
+require_once './models/PedidoUsuario.php';
 class PedidoUsuarioController
 {
     public function OperacionesPorSector(Request $request, Response $response, array $args)
