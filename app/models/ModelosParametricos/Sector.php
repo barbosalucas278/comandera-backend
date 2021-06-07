@@ -1,31 +1,20 @@
 <?php
-class Sector
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Sector extends Model
 {
-    public $Id;
-    public $Detalle;
+    use SoftDeletes;
 
-    public function __construct()
-    {
-    }
+    protected $primaryKey = 'id';
+    protected $table = 'Sector';
+    public $incrementing = true;
+    public $timestamps = false;
 
-    public static function FindById($id)
-    {
-        try {
-            $acceso = AccesoDatos::GetAccesoDatos();
-            $consulta = $acceso->RetornarConsulta("SELECT 
-                Id AS Id,
-                Detalle AS Detalle,
-                FROM Sector  WHERE Id = :id");
-            $consulta->bindValue(':id', $id, PDO::PARAM_INT);
-            $consulta->execute();
-            $SectorEncontrado = $consulta->fetchObject('Sector');
-            if (isset($SectorEncontrado)) {
-                return $SectorEncontrado;
-            } else {
-                throw new Exception("No se encontró el sector");
-            }
-        } catch (Exception $ex) {
-            throw new Exception($ex->getMessage(), $ex);
-        }
-    }
+    protected $fillable = [
+        'Detalle'
+    ];
 }

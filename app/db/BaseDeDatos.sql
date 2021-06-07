@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost
--- Tiempo de generación: 17-05-2021 a las 20:30:11
+-- Tiempo de generación: 03-06-2021 a las 15:26:32
 -- Versión del servidor: 8.0.13-4
 -- Versión de PHP: 7.2.24-0ubuntu0.18.04.7
 
@@ -27,6 +27,7 @@ SET time_zone = "+00:00";
 --
 -- Estructura de tabla para la tabla `Encuesta`
 --
+USE x4dKG09z2K;
 
 CREATE TABLE `Encuesta` (
   `Id` int(11) NOT NULL,
@@ -125,14 +126,6 @@ CREATE TABLE `Mesa` (
   `Codigo` varchar(5) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
---
--- Volcado de datos para la tabla `Mesa`
---
-
-INSERT INTO `Mesa` (`Id`, `EstadoMesaId`, `Codigo`) VALUES
-(1, 5, 'M0001'),
-(2, 5, 'M0002');
-
 -- --------------------------------------------------------
 
 --
@@ -142,7 +135,7 @@ INSERT INTO `Mesa` (`Id`, `EstadoMesaId`, `Codigo`) VALUES
 CREATE TABLE `Pedido` (
   `Id` int(11) NOT NULL,
   `EstadoPedidoId` int(11) NOT NULL DEFAULT '1',
-  `CodigoMesa` varchar(5) COLLATE utf8_unicode_ci NOT NULL,
+  `MesaId` int(11) NOT NULL,
   `CodigoPedido` varchar(5) COLLATE utf8_unicode_ci NOT NULL,
   `ProductoId` int(11) NOT NULL,
   `Cantidad` int(11) NOT NULL,
@@ -156,13 +149,17 @@ CREATE TABLE `Pedido` (
   `UrlFoto` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+-- --------------------------------------------------------
+
 --
--- Volcado de datos para la tabla `Pedido`
+-- Estructura de tabla para la tabla `PedidoUsuario`
 --
 
-INSERT INTO `Pedido` (`Id`, `EstadoPedidoId`, `CodigoMesa`, `CodigoPedido`, `ProductoId`, `Cantidad`, `Importe`, `FechaCreacion`, `HorarioCreacion`, `HorarioInicio`, `TiempoEstipulado`, `HorarioDeEntrega`, `NombreCliente`, `UrlFoto`) VALUES
-(1, 1, '2', 'd2886', 2, 3, 151.5, '2021-05-17', '21:52:33', NULL, NULL, NULL, 'Victoria', ''),
-(2, 1, '2', 'd1199', 1, 2, 21, '2021-05-17', '16:56:50', NULL, NULL, NULL, 'Victoria', '');
+CREATE TABLE `PedidoUsuario` (
+  `Id` int(11) NOT NULL,
+  `PedidoId` int(11) NOT NULL,
+  `UsuarioId` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -180,27 +177,6 @@ CREATE TABLE `Producto` (
   `FechaCreacion` date NOT NULL,
   `FechaUltimaModificacion` date DEFAULT NULL,
   `Activo` tinyint(1) NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
---
--- Volcado de datos para la tabla `Producto`
---
-
-INSERT INTO `Producto` (`Id`, `Codigo`, `TipoProductoId`, `Nombre`, `Stock`, `Precio`, `FechaCreacion`, `FechaUltimaModificacion`, `Activo`) VALUES
-(1, '12345', 2, 'Flan', 10, 10.5, '2021-05-17', NULL, 1),
-(2, '12346', 1, 'Churrasco con pure', 12, 50.5, '2021-05-17', NULL, 1);
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `ProductoPedidoUsuario`
---
-
-CREATE TABLE `ProductoPedidoUsuario` (
-  `Id` int(11) NOT NULL,
-  `ProductoId` int(11) NOT NULL,
-  `PedidoId` int(11) NOT NULL,
-  `UsuarioId` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -223,7 +199,8 @@ INSERT INTO `Sector` (`Id`, `Detalle`) VALUES
 (2, 'Candy Bar'),
 (3, 'Barra de cervezas'),
 (4, 'Barra de tragos'),
-(5, 'Salon');
+(5, 'Salon'),
+(6, 'Administracion');
 
 -- --------------------------------------------------------
 
@@ -264,7 +241,7 @@ CREATE TABLE `TipoUsuario` (
 
 INSERT INTO `TipoUsuario` (`Id`, `Detalle`) VALUES
 (1, 'Empleado'),
-(2, 'Administrador');
+(2, 'Socio');
 
 -- --------------------------------------------------------
 
@@ -288,13 +265,6 @@ CREATE TABLE `Usuario` (
   `TipoUsuarioId` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
---
--- Volcado de datos para la tabla `Usuario`
---
-
-INSERT INTO `Usuario` (`Id`, `SectorId`, `EstadoUsuarioId`, `Nombre`, `Apellido`, `Clave`, `Mail`, `FechaCreacion`, `FechaUltimaModificacion`, `FechaBaja`, `UsuarioModificacion`, `UsuarioAlta`, `TipoUsuarioId`) VALUES
-(1, 3, 2, 'Nahuel', 'Barbosa', '$2y$10$IyMwna5RSYtqQ56YBT/OF.fmO4TqMKdCWUuNzv5W69mOjhRlknpK6', 'nahuel@nahuel.com', '2021-05-17', NULL, NULL, NULL, 'Lucas', 1);
-
 -- --------------------------------------------------------
 
 --
@@ -305,9 +275,7 @@ CREATE TABLE `UsuarioLog` (
   `Id` int(11) NOT NULL,
   `UsuarioId` int(11) NOT NULL,
   `FechaDeIngreso` date NOT NULL,
-  `HoraDeIngreso` time NOT NULL,
-  `FechaDeEgreso` date NOT NULL,
-  `HoraDeEgreso` time NOT NULL
+  `HoraDeIngreso` time NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -359,7 +327,16 @@ ALTER TABLE `Mesa`
 ALTER TABLE `Pedido`
   ADD PRIMARY KEY (`Id`),
   ADD KEY `IXFK_Pedido_EstadoPedido` (`EstadoPedidoId`),
-  ADD KEY `IXFK_Pedido_Producto` (`ProductoId`);
+  ADD KEY `IXFK_Pedido_Producto` (`ProductoId`),
+  ADD KEY `IXFK_Pedido_Mesa` (`MesaId`) USING BTREE;
+
+--
+-- Indices de la tabla `PedidoUsuario`
+--
+ALTER TABLE `PedidoUsuario`
+  ADD PRIMARY KEY (`Id`),
+  ADD KEY `IXFK_PedidoUsuario_Pedido` (`PedidoId`),
+  ADD KEY `IXFK_PedidoUsuario_Usuario` (`UsuarioId`);
 
 --
 -- Indices de la tabla `Producto`
@@ -367,15 +344,6 @@ ALTER TABLE `Pedido`
 ALTER TABLE `Producto`
   ADD PRIMARY KEY (`Id`),
   ADD KEY `IXFK_Producto_TipoProducto` (`TipoProductoId`);
-
---
--- Indices de la tabla `ProductoPedidoUsuario`
---
-ALTER TABLE `ProductoPedidoUsuario`
-  ADD PRIMARY KEY (`Id`),
-  ADD KEY `IXFK_ProductoPedidoUsuario_Pedido` (`PedidoId`),
-  ADD KEY `IXFK_ProductoPedidoUsuario_Producto` (`ProductoId`),
-  ADD KEY `IXFK_ProductoPedidoUsuario_Usuario` (`UsuarioId`);
 
 --
 -- Indices de la tabla `Sector`
@@ -450,31 +418,31 @@ ALTER TABLE `EstadoUsuario`
 -- AUTO_INCREMENT de la tabla `Mesa`
 --
 ALTER TABLE `Mesa`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `Pedido`
 --
 ALTER TABLE `Pedido`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `PedidoUsuario`
+--
+ALTER TABLE `PedidoUsuario`
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `Producto`
 --
 ALTER TABLE `Producto`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT de la tabla `ProductoPedidoUsuario`
---
-ALTER TABLE `ProductoPedidoUsuario`
   MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `Sector`
 --
 ALTER TABLE `Sector`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `TipoProducto`
@@ -492,7 +460,7 @@ ALTER TABLE `TipoUsuario`
 -- AUTO_INCREMENT de la tabla `Usuario`
 --
 ALTER TABLE `Usuario`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `UsuarioLog`
@@ -516,14 +484,6 @@ ALTER TABLE `EncuestaMesa`
 --
 ALTER TABLE `Mesa`
   ADD CONSTRAINT `FK_Mesa_EstadoMesa` FOREIGN KEY (`EstadoMesaId`) REFERENCES `EstadoMesa` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
-
---
--- Filtros para la tabla `ProductoPedidoUsuario`
---
-ALTER TABLE `ProductoPedidoUsuario`
-  ADD CONSTRAINT `FK_ProductoPedidoUsuario_Pedido` FOREIGN KEY (`PedidoId`) REFERENCES `Pedido` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `FK_ProductoPedidoUsuario_Producto` FOREIGN KEY (`ProductoId`) REFERENCES `Producto` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `FK_ProductoPedidoUsuario_Usuario` FOREIGN KEY (`UsuarioId`) REFERENCES `Usuario` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Filtros para la tabla `TipoProducto`

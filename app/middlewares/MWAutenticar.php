@@ -24,6 +24,7 @@ class MWAutenticar
             $response = $handler->handle($request);
             return  $response;
         } catch (Exception $ex) {
+
             throw new Exception("Ocurrio un problema " . $ex->getMessage(), 0, $ex);
         }
     }
@@ -33,12 +34,13 @@ class MWAutenticar
             throw new Exception("El token se encuentra vacio");
         }
         try {
-            return $tokenDecodificado = JWT::decode($token, $_ENV['SECRET_KEY'], [$_ENV['TIPO_ENCRYP']]);
+            $tokenDecodificado = JWT::decode($token, $_ENV['SECRET_KEY'], [$_ENV['TIPO_ENCRYP']]);
+            if ($tokenDecodificado->aud !== UsuarioController::Aud()) {
+                throw new Exception("No es un usuario válido ");
+            }
+            return $tokenDecodificado;
         } catch (Exception $ex) {
-            throw $ex;
-        }
-        if ($tokenDecodificado->aud !== UsuarioController::Aud()) {
-            throw new Exception("No es un usuario válido ");
+            throw new Exception("Verificar token " . $ex->getMessage(), 0, $ex);
         }
     }
     public static function ObtenerDataToken($token)

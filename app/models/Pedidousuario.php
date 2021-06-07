@@ -1,113 +1,32 @@
 <?php
 
-class PedidoUsuario
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class PedidoUsuario extends Model
 {
-    public $Id;
-    public $PedidoId;
-    public $UsuarioId;
-    public $Sector;
-    public $CantidadOperaciones;
+    use SoftDeletes;
 
-    public function __construct()
-    {
-    }
+    protected $primaryKey = 'Id';
+    protected $table = 'PedidoUsuario';
+    public $incrementing = true;
+    public $timestamps = true;
+    const CREATED_AT = 'FechaCreacion';
+    const UPDATED_AT = 'FechaModificacion';
+    const DELETED_AT = 'Eliminado';
+    protected $fillable = [
+        'Pedido_Id', 'usuario_Id'
+    ];
 
-    public static function GetAllByEmpleado()
+    // public function pedidos()
+    // {
+    //     return $this->hasMany(Pedido::class);
+    // }
+
+    public function usuario()
     {
-        try {
-            $acceso = AccesoDatos::GetAccesoDatos();
-            $arrayPedidosUsuario = array();
-            $consulta = $acceso->prepararConsulta("SELECT                            
-            Usuario.Mail AS Usuario,                           
-            COUNT(Usuario.Id) AS CantidadOperaciones                       
-            FROM PedidoUsuario
-            INNER JOIN Usuario ON PedidoUsuario.UsuarioId = Usuario.Id             
-            GROUP BY Usuario.Mail");
-            $consulta->execute();
-            $array = $consulta->fetchAll(PDO::FETCH_OBJ);
-            if (is_null($array)) {
-                throw new Exception("La lista esta vacia");
-            }
-            foreach ($array as $PedidoUsuario) {
-                array_push(
-                    $arrayPedidosUsuario,
-                    $PedidoUsuario
-                );
-            }
-            return $arrayPedidosUsuario;
-        } catch (Exception $th) {
-            throw new Exception("No se pudo cargar la lista" . $th->getMessage(), 2, $th);
-        }
-    }
-    public static function GetAllSectorPorEmpleado()
-    {
-        try {
-            $acceso = AccesoDatos::GetAccesoDatos();
-            $arrayPedidosUsuario = array();
-            $consulta = $acceso->prepararConsulta("SELECT                 
-            Sector.Detalle AS Sector,
-            Usuario.Mail AS Usuario,            
-            COUNT(Usuario.SectorId) AS CantidadOperaciones                       
-            FROM PedidoUsuario
-            INNER JOIN Usuario ON PedidoUsuario.UsuarioId = Usuario.Id 
-            INNER JOIN Sector ON Usuario.SectorId = Sector.Id
-            GROUP BY Sector.Detalle");
-            $consulta->execute();
-            $array = $consulta->fetchAll(PDO::FETCH_OBJ);
-            if (is_null($array)) {
-                throw new Exception("La lista esta vacia");
-            }
-            foreach ($array as $PedidoUsuario) {
-                array_push(
-                    $arrayPedidosUsuario,
-                    $PedidoUsuario
-                );
-            }
-            return $arrayPedidosUsuario;
-        } catch (Exception $th) {
-            throw new Exception("No se pudo cargar la lista" . $th->getMessage(), 2, $th);
-        }
-    }
-    public static function GetAllSector()
-    {
-        try {
-            $acceso = AccesoDatos::GetAccesoDatos();
-            $arrayPedidosUsuario = array();
-            $consulta = $acceso->prepararConsulta("SELECT                 
-            Sector.Detalle AS Sector,            
-            COUNT(Usuario.SectorId) AS CantidadOperaciones                       
-            FROM PedidoUsuario
-            INNER JOIN Usuario ON PedidoUsuario.UsuarioId = Usuario.Id 
-            INNER JOIN Sector ON Usuario.SectorId = Sector.Id
-            GROUP BY Sector.Detalle");
-            $consulta->execute();
-            $array = $consulta->fetchAll(PDO::FETCH_OBJ);
-            if (is_null($array)) {
-                throw new Exception("La lista esta vacia");
-            }
-            foreach ($array as $PedidoUsuario) {
-                array_push(
-                    $arrayPedidosUsuario,
-                    $PedidoUsuario
-                );
-            }
-            return $arrayPedidosUsuario;
-        } catch (Exception $th) {
-            throw new Exception("No se pudo cargar la lista" . $th->getMessage(), 2, $th);
-        }
-    }
-    public static function GuardarPedidoUsuario($pedidoUsuario)
-    {
-        try {
-            $acceso = AccesoDatos::GetAccesoDatos();
-            $consulta = $acceso->prepararConsulta("INSERT 
-            INTO PedidoUsuario(PedidoId,UsuarioId) 
-            VALUES (:pedidoId,:usuarioId);");
-            $consulta->bindValue(':pedidoId', $pedidoUsuario->PedidoId, PDO::PARAM_INT);
-            $consulta->bindValue(':usuarioId', $pedidoUsuario->UsuarioId, PDO::PARAM_INT);
-            return $consulta->execute();
-        } catch (Exception $th) {
-            throw new Exception("No agrego correctamente " . $th->getMessage(), 1, $th);
-        }
+        return $this->belongsTo(Usuario::class);
     }
 }

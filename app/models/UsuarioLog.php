@@ -1,92 +1,32 @@
 <?php
 
-class UsuarioLog
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class UsuarioLog extends Model
 {
-    public $Id;
-    public $UsuarioId;
-    #region Datos Usuario
-    public $UsuarioNombre;
-    public $UsuarioApellido;
-    public $UsuarioMail;
-    #endregion 
-    public $FechaDeIngreso;
-    public $HoraDeIngreso;
+    use SoftDeletes;
 
-    public function __construct()
+    protected $primaryKey = 'Id';
+    protected $table = 'UsuarioLog';
+    public $incrementing = true;
+    public $timestamps = true;
+    const CREATED_AT = 'FechaDeIngreso';
+    const UPDATED_AT = 'FechaModificacion';
+    const DELETED_AT = 'Eliminado';
+    protected $fillable = [
+        'usuario_id', 'HoraDeIngreso'
+    ];
+
+    public function usuarios()
     {
+        return $this->hasOne(Usuario::class)->latestOfMany();
     }
 
-    public static function GetAllSector()
+    public function usuario()
     {
-        try {
-            $acceso = AccesoDatos::GetAccesoDatos();
-            $arrayUsuariosLogs = array();
-            $consulta = $acceso->prepararConsulta("SELECT                 
-                UsuarioLog.Id AS Id,
-                UsuarioId AS  UsuarioId, 
-                Usuario.Nombre AS UsuarioNombre,
-                Usuario.Apellido AS UsuarioApellido,
-                Usuario.Mail AS UsuarioMail,           
-                FechaDeIngreso AS FechaDeIngreso,
-                HoraDeIngreso AS HoraDeIngreso
-                 FROM UsuarioLog 
-                 INNER JOIN Usuario ON Usuario.Id = UsuarioLog.UsuarioId");
-            $consulta->execute();
-            $array = $consulta->fetchAll(PDO::FETCH_CLASS, "UsuarioLog");
-            if (is_null($array)) {
-                throw new Exception("La lista esta vacia");
-            }
-            foreach ($array as $usuarioLog) {
-                array_push($arrayUsuariosLogs, $usuarioLog);
-            }
-            return $arrayUsuariosLogs;
-        } catch (Exception $th) {
-            throw new Exception("No se pudo cargar la lista" . $th->getMessage(), 2, $th);
-        }
-    }
-    public static function GetAll()
-    {
-        try {
-            $acceso = AccesoDatos::GetAccesoDatos();
-            $arrayUsuariosLogs = array();
-            $consulta = $acceso->prepararConsulta("SELECT                 
-                UsuarioLog.Id AS Id,
-                UsuarioId AS  UsuarioId, 
-                Usuario.Nombre AS UsuarioNombre,
-                Usuario.Apellido AS UsuarioApellido,
-                Usuario.Mail AS UsuarioMail,           
-                FechaDeIngreso AS FechaDeIngreso,
-                HoraDeIngreso AS HoraDeIngreso
-                 FROM UsuarioLog 
-                 INNER JOIN Usuario ON Usuario.Id = UsuarioLog.UsuarioId");
-            $consulta->execute();
-            $array = $consulta->fetchAll(PDO::FETCH_CLASS, "UsuarioLog");
-            if (is_null($array)) {
-                throw new Exception("La lista esta vacia");
-            }
-            foreach ($array as $usuarioLog) {
-                array_push($arrayUsuariosLogs, $usuarioLog);
-            }
-            return $arrayUsuariosLogs;
-        } catch (Exception $th) {
-            throw new Exception("No se pudo cargar la lista" . $th->getMessage(), 2, $th);
-        }
-    }
-    public function GuardarUsuarioLog()
-    {
-        try {
-            $fechaDeIngreso = date("y-m-d");
-            $horaDeIngreso = date("G:i:s");
-            $acceso = AccesoDatos::GetAccesoDatos();
-            $consulta = $acceso->prepararConsulta("INSERT 
-            INTO UsuarioLog(UsuarioId,FechaDeIngreso,HoraDeIngreso) 
-            VALUES (:usuarioId,:fechaDeIngreso,:horaDeIngreso);");
-            $consulta->bindValue(':usuarioId', $this->UsuarioId, PDO::PARAM_INT);
-            $consulta->bindValue(':fechaDeIngreso', $fechaDeIngreso, PDO::PARAM_STR);
-            $consulta->bindValue(':horaDeIngreso', $horaDeIngreso, PDO::PARAM_STR);
-            return $consulta->execute();
-        } catch (Exception $th) {
-            throw new Exception("No agrego correctamente " . $th->getMessage(), 1, $th);
-        }
+        return $this->belongsTo(Usuario::class);
     }
 }

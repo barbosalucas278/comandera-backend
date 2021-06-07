@@ -2,6 +2,8 @@
 error_reporting(-1);
 ini_set('display_errors', 1);
 
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Log\LoggerInterface;
 use FastRoute\RouteCollector;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -9,10 +11,12 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Factory\AppFactory;
 use Slim\Routing\RouteCollectorProxy;
 use Slim\Routing\RouteContext;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 require __DIR__ . '/../vendor/autoload.php';
+$dotenv = Dotenv\Dotenv::createImmutable("../");
+$dotenv->load();
 
-require_once './db/AccesoDatos.php';
 require_once './middlewares/MWAutenticar.php';
 require_once './middlewares/MWAccesos.php';
 require_once './middlewares/MWLogger.php';
@@ -27,9 +31,50 @@ require_once './controllers/PedidoUsuarioController.php';
 date_default_timezone_set('America/Argentina/Buenos_Aires');
 // Instantiate App
 $app = AppFactory::create();
+$app->addRoutingMiddleware();
 
 // Add error middleware
-$app->addErrorMiddleware(true, true, true);
+$customErrorHandler = function (
+  ServerRequestInterface $request,
+  Throwable $exception,
+  bool $displayErrorDetails,
+  bool $logErrors,
+  bool $logErrorDetails
+) use ($app) {
+
+  $payload = ['error' => $exception->getMessage()];
+
+  $response = $app->getResponseFactory()->createResponse();
+  $response->getBody()->write(
+    json_encode($payload, JSON_UNESCAPED_UNICODE)
+  );
+
+  return $response;
+};
+
+// Add Error Middleware
+$errorMiddleware = $app->addErrorMiddleware(true, true, true);
+$errorMiddleware->setDefaultErrorHandler($customErrorHandler);
+
+$app->addBodyParsingMiddleware();
+
+// Eloquent
+$container = $app->getContainer();
+
+$capsule = new Capsule;
+$capsule->addConnection([
+  'driver'    => 'mysql',
+  'host'      => $_ENV['MYSQL_HOST'],
+  'database'  => $_ENV['MYSQL_DB'],
+  'username'  => $_ENV['MYSQL_USER'],
+  'password'  => $_ENV['MYSQL_PASS'],
+  'charset'   => 'utf8',
+  'collation' => 'utf8_unicode_ci',
+  'prefix'    => '',
+]);
+
+$capsule->setAsGlobal();
+$capsule->bootEloquent();
 
 #region LOGIN
 $app->group('/login', function (RouteCollectorProxy $group) {
@@ -48,7 +93,7 @@ $app->group('/usuarios', function (RouteCollectorProxy $group) {
 
   $group->delete('/{id}', \UsuarioController::class . ':BorrarUno');
 
-  $group->post('/estado', \UsuarioController::class . ':cambiarEstado');
+  $group->put('/estado', \UsuarioController::class . ':cambiarEstado');
 
   //$group->put('/', \UsuarioController::class . ':ModificarUno');
 })->add(\MWAccesos::class . ':soloAdministradores')->add(\MWAutenticar::class . ':verificarUsuario');
@@ -62,13 +107,19 @@ $app->group('/mesas', function (RouteCollectorProxy $group) {
 
   $group->post('[/]', \MesaController::class . ':CargarUno')->add(\MWAccesos::class . ':soloAdministradores');
 
-  $group->post('/estado', \MesaController::class . ':cambiarEstado');
+  $group->put('/estado', \MesaController::class . ':cambiarEstado');
 })->add(\MWAccesos::class . ':administradoresYMozos')
   ->add(\MWAutenticar::class . ':verificarUsuario');
 #endregion
 
 #region PRODUCTOS
 $app->group('/productos', function (RouteCollectorProxy $group) {
+  $group->get('/csv', \ProductosController::class . ':descargaCSV')->add(\MWAccesos::class . ':soloAdministradores');
+
+  $group->post('/csv', \ProductosController::class . ':cargaCSV')->add(\MWAccesos::class . ':soloAdministradores');
+
+  $group->get('/pdf', \ProductosController::class . ':descargaPDF')->add(\MWAccesos::class . ':soloAdministradores');
+
   $group->get('[/]', \ProductosController::class . ':traerTodos');
 
   $group->get('/{id}', \ProductosController::class . ':traerUno');
@@ -85,17 +136,17 @@ $app->group('/pedidos', function (RouteCollectorProxy $group) {
 
   $group->post('[/]', \PedidosController::class . ':CargarUno')->add(\MWAccesos::class . ':administradoresYMozos');
 
-  $group->post('/estado', \PedidosController::class . ':CambiarEstado');
+  $group->put('/estado', \PedidosController::class . ':CambiarEstado');
 })->add(\MWAccesos::class . ':todosLosUsuarios')
   ->add(\MWAutenticar::class . ':verificarUsuario');
 #endregion
 
 #region INFORMES EMPLEADOS
 $app->group('/informesEmpleados', function (RouteCollectorProxy $group) {
-  $group->get('/usuariosLog', \UsuariosLogController::class . ':traerLosLogin');
-  $group->get('/sector', \PedidoUsuarioController::class . ':operacionesPorSector');
-  $group->get('/sectorPorEmpleado', \PedidoUsuarioController::class . ':operacionesPorSectorEmpleado'); // falta
-  $group->get('/operacionesPorEmpleado', \PedidoUsuarioController::class . ':operacionesByEmpleado');
+  $group->post('/usuariosLog', \UsuariosLogController::class . ':traerLosLogin');
+  $group->get('/sector', \PedidoUsuarioController::class . ':operacionesPorSector'); //TODO: Falta buscar por fecha u horario
+  $group->get('/sectorPorEmpleado/{sectorId}', \PedidoUsuarioController::class . ':operacionesPorSectorEmpleado'); // TODO:: Falta buscar por fecha u horario
+  $group->get('/operacionesPorEmpleado', \PedidoUsuarioController::class . ':operacionesByEmpleado'); // TODO: Falta buscar por fecha u horario
 })->add(\MWAccesos::class . ':soloAdministradores')->add(\MWAutenticar::class . ':verificarUsuario');
 #endregion
 

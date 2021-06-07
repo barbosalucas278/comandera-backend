@@ -2,12 +2,13 @@
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use \App\models\Usuario as Usuario;
 use Firebase\JWT\JWT;
 
 require_once './models/Usuario.php';
 require_once './interfaces/IApiUsable.php';
 require_once './utilities/Validacion.php';
-class UsuarioController extends Usuario implements IApiUsable
+class UsuarioController implements IApiUsable
 {
   public function CambiarEstado(Request $request, Response $response, array $args)
   {
@@ -23,11 +24,13 @@ class UsuarioController extends Usuario implements IApiUsable
       $nombreUsuarioModificacion = $request->getParsedBody()["token"]->Nombre;
       $id = $datosIngresados["usuarioId"];
       $nuevoEstado = $datosIngresados["estado"];
-      $usuarioModificado = new usuario();
-      $usuarioModificado->Id = $id;
+      $usuarioModificado = Usuario::where('Id', '=', $id)->first();
+      if (is_null($usuarioModificado)) {
+        throw new Exception("usuario no encontrado");
+      }
       $usuarioModificado->EstadoUsuarioId = $nuevoEstado;
       $usuarioModificado->UsuarioModificacion = $nombreUsuarioModificacion;
-      if (Usuario::ModificarEstadoUsuario($usuarioModificado)) {
+      if ($usuarioModificado->save()) {
         $datos = json_encode(array("Resultado" => "Modificado con exito"));
         $response->getBody()->write($datos);
         return $response
@@ -60,6 +63,7 @@ class UsuarioController extends Usuario implements IApiUsable
           ->withHeader('Content-Type', 'applocation/json')
           ->withStatus(404);
       }
+      $usuarioAlta = $request->getParsedBody()["token"]->Nombre;
       $nombre = $datosIngresados["nombre"];
       $apellido = $datosIngresados["apellido"];
       //para comparar en hash usamos password_verify(pass, passIngresada)
@@ -68,8 +72,14 @@ class UsuarioController extends Usuario implements IApiUsable
       $sectorId = $datosIngresados["sectorId"];
       $mail = $datosIngresados["mail"];
       $newUsuario = new Usuario();
-      $newUsuario->MapeoUsuario($nombre, $apellido, $clave, $mail, $tipoUsuarioId, $sectorId);
-      if ($newUsuario->GuardarUsuario()) {
+      $newUsuario->Nombre = $nombre;
+      $newUsuario->Apellido = $apellido;
+      $newUsuario->Clave = $clave;
+      $newUsuario->TipoUsuarioId = $tipoUsuarioId;
+      $newUsuario->SectorId = $sectorId;
+      $newUsuario->Mail = $mail;
+      $newUsuario->Usuarioalta = $usuarioAlta;
+      if ($newUsuario->save()) {
         $payload = json_encode(array("Resultado" => "Agregado"));
       }
       $response->getBody()->write($payload);
@@ -91,7 +101,11 @@ class UsuarioController extends Usuario implements IApiUsable
     try {
       //Los datos ingresados por la url se buscan en args
       $id = $args["id"];
-      $datos = json_encode(array(Usuario::FindById($id)));
+      $usuario = Usuario::where('Id', '=', $id)->first();
+      if (is_null($usuario)) {
+        throw new Exception("El usuario no existe");
+      }
+      $datos = json_encode($usuario);
       $response->getBody()->write($datos);
       return $response
         ->withHeader('Content-Type', 'applocation/json')
@@ -107,7 +121,7 @@ class UsuarioController extends Usuario implements IApiUsable
   public function TraerTodos(Request $request, Response $response, array $args)
   {
     try {
-      $datos = json_encode(Usuario::GetAll());
+      $datos = json_encode(Usuario::all());
       $response->getBody()->write($datos);
       return $response
         ->withHeader('Content-Type', 'applocation/json')
@@ -199,11 +213,11 @@ class UsuarioController extends Usuario implements IApiUsable
     try {
       $clave = $datosIngresados["clave"];
       $mail = $datosIngresados["mail"];
-      $listado = Usuario::GetAll();
+      $listado = Usuario::all();
       if (!is_null($listado)) {
         foreach ($listado as $usuario) {
-          if ($usuario->GetMail() == $mail) {
-            if (password_verify($clave, $usuario->GetClave())) {
+          if ($usuario->Mail == $mail) {
+            if (password_verify($clave, $usuario->Clave)) {
               $datos = [
                 "Id" => $usuario->Id,
                 "Nombre" => $usuario->Nombre, "Apellido" => $usuario->Apellido, "Mail" => $usuario->Mail,
@@ -239,7 +253,7 @@ class UsuarioController extends Usuario implements IApiUsable
       "data" => $datos,
       "app" => 'La Comanda'
     );
-    return JWT::encode($payload, getenv('SECRET_KEY'));
+    return JWT::encode($payload, $_ENV['SECRET_KEY']);
   }
   public static function Aud()
   {
