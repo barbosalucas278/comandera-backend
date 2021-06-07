@@ -14,8 +14,8 @@ use Slim\Routing\RouteContext;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 require __DIR__ . '/../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable('../');
-$dotenv->load();
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->safeLoad();
 
 require_once './middlewares/MWAutenticar.php';
 require_once './middlewares/MWAccesos.php';
