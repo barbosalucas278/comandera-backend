@@ -36,7 +36,7 @@ $app->setBasePath('/app');
 $app->addBodyParsingMiddleware();
 $app->addRoutingMiddleware();
 // Add error middleware
-/*$customErrorHandler = function (
+$customErrorHandler = function (
   ServerRequestInterface $request,
   Throwable $exception,
   bool $displayErrorDetails,
@@ -57,8 +57,7 @@ $app->addRoutingMiddleware();
 // Add Error Middleware
 $errorMiddleware = $app->addErrorMiddleware(true, true, true);
 $errorMiddleware->setDefaultErrorHandler($customErrorHandler);
-*/
-$app->addErrorMiddleware(true, true, true);
+
 // Eloquent
 $container = $app->getContainer();
 
