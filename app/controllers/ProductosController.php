@@ -178,13 +178,13 @@ class ProductosController implements IApiUsable
       $datos = json_encode($producto);
       $response->getBody()->write($datos);
       return $response
-        ->withHeader('Content-Type', 'applocation/json')
+        ->withHeader('Content-Type', 'application/json')
         ->withStatus(200);
     } catch (Exception $ex) {
       $error = $ex->getMessage();
       $datosError = json_encode(array("Error" => $error));
       $response->getBody()->write($datosError);
-      return $response->withHeader('Content-Type', 'applocation/json')->withStatus(500);
+      return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
     }
   }
   public function TraerTodos(Request $request, Response $response, array $args)
@@ -193,13 +193,13 @@ class ProductosController implements IApiUsable
       $datos = json_encode(Producto::all());
       $response->getBody()->write($datos);
       return $response
-        ->withHeader('Content-Type', 'applocation/json')
+        ->withHeader('Content-Type', 'application/json')
         ->withStatus(200);
     } catch (Exception $ex) {
       $error = $ex->getMessage();
       $datosError = json_encode(array("Error" => $error));
       $response->getBody()->write($datosError);
-      return $response->withHeader('Content-Type', 'applocation/json')->withStatus(500);
+      return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
     }
   }
   public function CargarUno(Request $request, Response $response, array $args)
@@ -217,7 +217,7 @@ class ProductosController implements IApiUsable
         $error = json_encode(array("Error" => "Datos incompletos"));
         $response->getBody()->write($error);
         return $response
-          ->withHeader('Content-Type', 'applocation/json')
+          ->withHeader('Content-Type', 'application/json')
           ->withStatus(404);
       }
       $codigo = $datosIngresados["codigo"];
@@ -236,14 +236,14 @@ class ProductosController implements IApiUsable
       }
       $response->getBody()->write($payload);
       return $response
-        ->withHeader('Content-Type', 'applocation/json')
+        ->withHeader('Content-Type', 'application/json')
         ->withStatus(200);
     } catch (Exception $ex) {
       $error = $ex->getMessage();
       $datosError = json_encode(array("Error" => $error));
       $response->getBody()->write($datosError);
       return $response
-        ->withHeader('Content-Type', 'applocation/json')
+        ->withHeader('Content-Type', 'application/json')
         ->withStatus(500);
     }
   }

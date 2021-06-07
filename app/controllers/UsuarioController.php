@@ -17,7 +17,7 @@ class UsuarioController implements IApiUsable
       $error = json_encode(array("Error" => "Datos incompletos"));
       $response->getBody()->write($error);
       return $response
-        ->withHeader('Content-Type', 'applocation/json')
+        ->withHeader('Content-Type', 'application/json')
         ->withStatus(404);
     }
     try {
@@ -34,14 +34,14 @@ class UsuarioController implements IApiUsable
         $datos = json_encode(array("Resultado" => "Modificado con exito"));
         $response->getBody()->write($datos);
         return $response
-          ->withHeader('Content-Type', 'applocation/json')
+          ->withHeader('Content-Type', 'application/json')
           ->withStatus(200);
       }
     } catch (Exception $ex) {
       $error = $ex->getMessage();
       $datosError = json_encode(array("Error" => $error));
       $response->getBody()->write($datosError);
-      return $response->withHeader('Content-Type', 'applocation/json')->withStatus(500);
+      return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
     }
   }
   public function CargarUno(Request $request, Response $response, array $args)
@@ -60,7 +60,7 @@ class UsuarioController implements IApiUsable
         $error = json_encode(array("Error" => "Datos incompletos"));
         $response->getBody()->write($error);
         return $response
-          ->withHeader('Content-Type', 'applocation/json')
+          ->withHeader('Content-Type', 'application/json')
           ->withStatus(404);
       }
       $usuarioAlta = $request->getParsedBody()["token"]->Nombre;
@@ -84,14 +84,14 @@ class UsuarioController implements IApiUsable
       }
       $response->getBody()->write($payload);
       return $response
-        ->withHeader('Content-Type', 'applocation/json')
+        ->withHeader('Content-Type', 'application/json')
         ->withStatus(200);
     } catch (Exception $ex) {
       $error = $ex->getMessage();
       $datosError = json_encode(array("Error" => $error));
       $response->getBody()->write($datosError);
       return $response
-        ->withHeader('Content-Type', 'applocation/json')
+        ->withHeader('Content-Type', 'application/json')
         ->withStatus(500);
     }
   }
@@ -108,13 +108,13 @@ class UsuarioController implements IApiUsable
       $datos = json_encode($usuario);
       $response->getBody()->write($datos);
       return $response
-        ->withHeader('Content-Type', 'applocation/json')
+        ->withHeader('Content-Type', 'application/json')
         ->withStatus(200);
     } catch (Exception $ex) {
       $error = $ex->getMessage();
       $datosError = json_encode(array("Error" => $error));
       $response->getBody()->write($datosError);
-      return $response->withHeader('Content-Type', 'applocation/json')->withStatus(500);
+      return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
     }
   }
 
@@ -124,13 +124,13 @@ class UsuarioController implements IApiUsable
       $datos = json_encode(Usuario::all());
       $response->getBody()->write($datos);
       return $response
-        ->withHeader('Content-Type', 'applocation/json')
+        ->withHeader('Content-Type', 'application/json')
         ->withStatus(200);
     } catch (Exception $ex) {
       $error = $ex->getMessage();
       $datosError = json_encode(array("Error" => $error));
       $response->getBody()->write($datosError);
-      return $response->withHeader('Content-Type', 'applocation/json')->withStatus(500);
+      return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
     }
   }
 
@@ -148,7 +148,7 @@ class UsuarioController implements IApiUsable
       $error = json_encode(array("Error" => "Datos incompletos"));
       $response->getBody()->write($error);
       return $response
-        ->withHeader('Content-Type', 'applocation/json')
+        ->withHeader('Content-Type', 'application/json')
         ->withStatus(404);
     }
     try {
@@ -164,14 +164,14 @@ class UsuarioController implements IApiUsable
         $datos = json_encode(array("Resultado" => "Modificado con exito"));
         $response->getBody()->write($datos);
         return $response
-          ->withHeader('Content-Type', 'applocation/json')
+          ->withHeader('Content-Type', 'application/json')
           ->withStatus(200);
       }
     } catch (Exception $ex) {
       $error = $ex->getMessage();
       $datosError = json_encode(array("Error" => $error));
       $response->getBody()->write($datosError);
-      return $response->withHeader('Content-Type', 'applocation/json')->withStatus(500);
+      return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
     }
   }
 
@@ -182,7 +182,7 @@ class UsuarioController implements IApiUsable
         $error = json_encode(array("Error" => "Datos incompletos"));
         $response->getBody()->write($error);
         return $response
-          ->withHeader('Content-Type', 'applocation/json')
+          ->withHeader('Content-Type', 'application/json')
           ->withStatus(404);
       }
       $id = $args["id"];
@@ -190,14 +190,14 @@ class UsuarioController implements IApiUsable
         $datos = json_encode(array("Resultado" => "Borrado con exito"));
         $response->getBody()->write($datos);
         return $response
-          ->withHeader('Content-Type', 'applocation/json')
+          ->withHeader('Content-Type', 'application/json')
           ->withStatus(200);
       }
     } catch (Exception $ex) {
       $error = $ex->getMessage();
       $datosError = json_encode(array("Error" => $error));
       $response->getBody()->write($datosError);
-      return $response->withHeader('Content-Type', 'applocation/json')->withStatus(500);
+      return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
     }
   }
   public function Login(Request $request, Response $response)
@@ -207,7 +207,7 @@ class UsuarioController implements IApiUsable
       $error = json_encode(array("Error" => "Datos incompletos"));
       $response->getBody()->write($error);
       return $response
-        ->withHeader('Content-Type', 'applocation/json')
+        ->withHeader('Content-Type', 'application/json')
         ->withStatus(404);
     }
     try {
@@ -226,7 +226,7 @@ class UsuarioController implements IApiUsable
               $token = self::CrearToken($datos);
               $response->getBody()->write($token);
               return $response
-                ->withHeader('Content-Type', 'applocation/json')
+                ->withHeader('Content-Type', 'application/json')
                 ->withStatus(200);
             } else {
               throw new Exception("La contraseña es incorrecta");
@@ -239,7 +239,7 @@ class UsuarioController implements IApiUsable
       $error = $ex->getMessage();
       $datosError = json_encode(array("Ocurrio un problema al logear " . $ex->getMessage() => $error));
       $response->getBody()->write($datosError);
-      return $response->withHeader('Content-Type', 'applocation/json')->withStatus(500);
+      return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
     }
   }
 
