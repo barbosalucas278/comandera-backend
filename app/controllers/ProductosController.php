@@ -138,7 +138,7 @@ class ProductosController implements IApiUsable
   }
   public function DescargaCSV(Request $request, Response $response, array $args)
   {
-    $ruta = "../temp/" . date("Gis") . "productos.csv";
+    $ruta = __DIR__ . "/temp/" . date("Gis") . "productos.csv";
     try {
       $archivo = fopen($ruta, "a");
       if ($archivo != null) {
