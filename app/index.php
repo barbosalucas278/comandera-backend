@@ -33,8 +33,8 @@ date_default_timezone_set('America/Argentina/Buenos_Aires');
 $app = AppFactory::create();
 
 $app->setBasePath('/app');
-$app->addBodyParsingMiddleware();
 $app->addRoutingMiddleware();
+$app->addBodyParsingMiddleware();
 // Add error middleware
 $customErrorHandler = function (
   ServerRequestInterface $request,
