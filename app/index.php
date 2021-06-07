@@ -32,6 +32,9 @@ date_default_timezone_set('America/Argentina/Buenos_Aires');
 // Instantiate App
 $app = AppFactory::create();
 
+$app->setBasePath("/LaComanda");
+$app->addBodyParsingMiddleware();
+$app->addRoutingMiddleware();
 // Add error middleware
 $customErrorHandler = function (
   ServerRequestInterface $request,
@@ -55,9 +58,6 @@ $customErrorHandler = function (
 $errorMiddleware = $app->addErrorMiddleware(true, true, true);
 $errorMiddleware->setDefaultErrorHandler($customErrorHandler);
 
-$app->setBasePath("/LaComanda");
-$app->addBodyParsingMiddleware();
-$app->addRoutingMiddleware();
 
 // Eloquent
 $container = $app->getContainer();
