@@ -43,7 +43,7 @@ class ProductosController implements IApiUsable
     try {
       if ($request->getUploadedFiles()) {
         $archivo = $request->getUploadedFiles();
-        $destino = "./temp/";
+        $destino = __DIR__;
         $nombreAnterior = $archivo['archivo']->getClientFileName();
         $extension = explode(".", $nombreAnterior);
         $extension = array_reverse($extension)[0];
