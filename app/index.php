@@ -149,5 +149,8 @@ $app->group('/informesEmpleados', function (RouteCollectorProxy $group) {
   $group->get('/operacionesPorEmpleado', \PedidoUsuarioController::class . ':operacionesByEmpleado'); // TODO: Falta buscar por fecha u horario
 })->add(\MWAccesos::class . ':soloAdministradores')->add(\MWAutenticar::class . ':verificarUsuario');
 #endregion
-
+$app->get('[/]', function (Request $request, Response $response) {
+  $response->getBody()->write("Slim Framework 4 PHP");
+  return $response;
+});
 $app->run();
