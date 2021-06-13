@@ -10,7 +10,13 @@ class Validacion
         }
         return false;
     }
-
+    public static function ValidarPuntuacion($puntuacion)
+    {
+        if (isset($puntuacion) && $puntuacion >= 0 && $puntuacion <= 10) {
+            return true;
+        }
+        return false;
+    }
     public static function EsCodigoDeBarras($codigo)
     {
         if (isset($codigo) && is_string($codigo) && strlen($codigo) == 8) {

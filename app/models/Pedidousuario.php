@@ -17,14 +17,17 @@ class PedidoUsuario extends Model
     const UPDATED_AT = 'FechaModificacion';
     const DELETED_AT = 'Eliminado';
     protected $fillable = [
-        'Pedido_Id', 'usuario_Id'
+        'Pedido_Id', 'usuario_Id', 'Entregado'
     ];
-
+    protected $dateFormat = 'Y-m-d';
     // public function pedidos()
     // {
     //     return $this->hasMany(Pedido::class);
     // }
-
+    public function pedidos()
+    {
+        return $this->belongsTo(Pedidos::class);
+    }
     public function usuario()
     {
         return $this->belongsTo(Usuario::class);

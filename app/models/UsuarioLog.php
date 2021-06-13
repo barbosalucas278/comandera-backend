@@ -19,7 +19,7 @@ class UsuarioLog extends Model
     protected $fillable = [
         'usuario_id', 'HoraDeIngreso'
     ];
-
+    protected $dateFormat = 'Y-m-d';
     public function usuarios()
     {
         return $this->hasOne(Usuario::class)->latestOfMany();

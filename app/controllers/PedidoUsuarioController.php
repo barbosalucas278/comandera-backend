@@ -10,7 +10,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 class PedidoUsuarioController
 {
-    //TODO:: REFACTORIZAR LA LINEA 17 ME TRAE EL PEDIDOUSUARIO Y ME TRA EL USUARIO FUNCIONA!!!
+    //TODO:: REFACTORIZAR, LA LINEA 17 ME TRAE EL PEDIDOUSUARIO Y ME TRA EL USUARIO FUNCIONA!!!
     public function OperacionesPorSector(Request $request, Response $response, array $args)
     {
         try {
@@ -56,15 +56,18 @@ class PedidoUsuarioController
         }
         return $listaNueva;
     }
-    private function CantidadPedidosPorUsuarioSector($listaDeUsuarios, $sectorId)
+    private function CantidadPedidosPorUsuarioSector($sectorId, $fechaInicio, $fechaFin)
     {
+        $listaDeUsuarios = Usuario::all();
         $listaNueva = collect();
         foreach ($listaDeUsuarios as $usuario) {
             if ($usuario['SectorId'] == $sectorId) {
                 $contador = 0;
                 $usuarioId = $usuario["Id"];
                 foreach ($usuario->pedidosUsuarios as $pedido) {
-                    $contador++;
+                    if (date_format($pedido->FechaCreacion, "Y-m-d") >= $fechaInicio && date_format($pedido->FechaCreacion, "Y-m-d") <= $fechaFin) {
+                        $contador++;
+                    }
                 }
                 $listaNueva->push(array("usuario_id" => $usuarioId, "cantidad_operaciones" => $contador));
             }
@@ -74,9 +77,13 @@ class PedidoUsuarioController
     public function OperacionesPorSectorEmpleado(Request $request, Response $response, array $args)
     {
         try {
-            $id = $args["sectorId"];
-            $listaDeUsuariosConSusPedidos = Usuario::all();
-            $cantidadDePedidosPorUsuario = $this->CantidadPedidosPorUsuarioSector($listaDeUsuariosConSusPedidos, $id);
+            $datos = $request->getQueryParams();
+
+            $id = $datos["sectorId"];
+            $fechaInicio = ($datos["fechaInicio"] ?? date_format(new DateTime(), "Y-m-d"));
+            $fechaFin = ($datos["fechaFin"] ?? date_format(new DateTime(), "Y-m-d"));
+
+            $cantidadDePedidosPorUsuario = $this->CantidadPedidosPorUsuarioSector($id, $fechaInicio, $fechaFin);
             $datos = json_encode($cantidadDePedidosPorUsuario);
             $response->getBody()->write($datos);
             return $response

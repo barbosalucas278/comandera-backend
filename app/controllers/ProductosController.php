@@ -11,11 +11,9 @@ class ProductosController implements IApiUsable
 {
   public function DescargaPDF(Request $request, Response $response, array $args)
   {
-    $ruta = "./temp/" . date("Gis") . "productos.pdf";
     try {
       ob_start();
       $pdf = new PDF();
-      $pdf->SetTitle("Productos");
       $productos = Producto::all();
       $pdf->AliasNbPages();
       $pdf->AddPage();

@@ -17,6 +17,7 @@ class PDF extends FPDF
         $this->MultiCell(0, 5, $contenido);
         $this->Ln();
     }
+
     function Footer()
     {
         $this->SetY(-15);

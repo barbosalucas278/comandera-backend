@@ -22,15 +22,20 @@ class Pedido extends Model
         'MesaId',
         'CodigoPedido',
         'Cantidad',
-        'ProductoId',
+        'producto_id',
         'Cantidad',
         'Importe',
         'HorarioCreacion',
         'HorarioInicio',
-        'TiempoEstipulado',
+        'HorarioEstipulado',
         'HorarioDeEntrega',
         'NombreCliente',
         'Foto',
         'Eliminado'
     ];
+    protected $dateFormat = 'Y-m-d';
+    public function producto()
+    {
+        return $this->belongsTo(Producto::class, 'producto_id');
+    }
 }

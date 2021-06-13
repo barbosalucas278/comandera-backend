@@ -20,7 +20,7 @@ class Usuario extends Model
         'SectorId', 'Nombre', 'Apellido', 'Mail',
         'UsuarioAlta', 'Tipousuario', 'EstadoUsuarioId'
     ];
-
+    protected $dateFormat = 'Y-m-d';
     public function pedidosUsuarios()
     {
         return $this->hasMany(PedidoUsuario::class);

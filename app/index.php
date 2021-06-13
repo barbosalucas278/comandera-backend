@@ -14,19 +14,21 @@ use Slim\Routing\RouteContext;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 require __DIR__ . '/../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->safeLoad();
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__); // "../"
+$dotenv->safeLoad(); // load()
 
 require_once './middlewares/MWAutenticar.php';
 require_once './middlewares/MWAccesos.php';
 require_once './middlewares/MWLogger.php';
 
 require_once './controllers/UsuarioController.php';
+require_once './controllers/VentasController.php';
 require_once './controllers/MesaController.php';
 require_once './controllers/ProductosController.php';
 require_once './controllers/PedidosController.php';
 require_once './controllers/UsuariosLogController.php';
 require_once './controllers/PedidoUsuarioController.php';
+require_once './controllers/EncuestasController.php';
 
 date_default_timezone_set('America/Argentina/Buenos_Aires');
 // Instantiate App
@@ -96,7 +98,8 @@ $app->group('/usuarios', function (RouteCollectorProxy $group) {
   $group->put('/estado', \UsuarioController::class . ':cambiarEstado');
 
   //$group->put('/', \UsuarioController::class . ':ModificarUno');
-})->add(\MWAccesos::class . ':soloAdministradores')->add(\MWAutenticar::class . ':verificarUsuario');
+})->add(\MWAccesos::class . ':soloAdministradores')
+  ->add(\MWAutenticar::class . ':verificarUsuario');
 #endregion
 
 #region MESAS
@@ -105,7 +108,8 @@ $app->group('/mesas', function (RouteCollectorProxy $group) {
 
   $group->get('/{id}', \MesaController::class . ':traerUno');
 
-  $group->post('[/]', \MesaController::class . ':CargarUno')->add(\MWAccesos::class . ':soloAdministradores');
+  $group->post('[/]', \MesaController::class . ':CargarUno')
+    ->add(\MWAccesos::class . ':soloAdministradores');
 
   $group->put('/estado', \MesaController::class . ':cambiarEstado');
 })->add(\MWAccesos::class . ':administradoresYMozos')
@@ -114,30 +118,51 @@ $app->group('/mesas', function (RouteCollectorProxy $group) {
 
 #region PRODUCTOS
 $app->group('/productos', function (RouteCollectorProxy $group) {
-  $group->get('/csv', \ProductosController::class . ':descargaCSV')->add(\MWAccesos::class . ':soloAdministradores');
+  $group->get('/csv', \ProductosController::class . ':descargaCSV')
+    ->add(\MWAccesos::class . ':soloAdministradores');
 
-  $group->post('/csv', \ProductosController::class . ':cargaCSV')->add(\MWAccesos::class . ':soloAdministradores');
+  $group->post('/csv', \ProductosController::class . ':cargaCSV')
+    ->add(\MWAccesos::class . ':soloAdministradores');
 
-  $group->get('/pdf', \ProductosController::class . ':descargaPDF')->add(\MWAccesos::class . ':soloAdministradores');
+  $group->get('/pdf', \ProductosController::class . ':descargaPDF')
+    ->add(\MWAccesos::class . ':soloAdministradores');
 
   $group->get('[/]', \ProductosController::class . ':traerTodos');
 
   $group->get('/{id}', \ProductosController::class . ':traerUno');
 
-  $group->post('[/]', \ProductosController::class . ':CargarUno')->add(\MWAccesos::class . ':soloAdministradores');
-})->add(\MWAccesos::class . ':administradoresYMozos')->add(\MWAutenticar::class . ':verificarUsuario');
+  $group->post('[/]', \ProductosController::class . ':CargarUno')
+    ->add(\MWAccesos::class . ':soloAdministradores');
+})->add(\MWAccesos::class . ':administradoresYMozos')
+  ->add(\MWAutenticar::class . ':verificarUsuario');
 #endregion
 
 #region PEDIDOS
 $app->group('/pedidos', function (RouteCollectorProxy $group) {
   $group->get('[/]', \PedidosController::class . ':traerTodos');
 
+  $group->get('/sector/{sectorId}', \PedidosController::class . ':traerPendientesPorSector');
+
+  $group->get('/listos', \PedidosController::class . ':traerPedidosListos')
+    ->add(\MWAccesos::class . ':administradoresYMozos');
+
+  $group->get('/listosPorCodigo', \PedidosController::class . ':traerPedidosListosPorCodigo')
+    ->add(\MWAccesos::class . ':administradoresYMozos');
+
   $group->get('/{id}', \PedidosController::class . ':traerUno');
 
-  $group->post('[/]', \PedidosController::class . ':CargarUno')->add(\MWAccesos::class . ':administradoresYMozos');
+  $group->post('[/]', \PedidosController::class . ':CargarUno')
+    ->add(\MWAccesos::class . ':administradoresYMozos');
 
   $group->put('/estado', \PedidosController::class . ':CambiarEstado');
 })->add(\MWAccesos::class . ':todosLosUsuarios')
+  ->add(\MWAutenticar::class . ':verificarUsuario');
+#endregion
+
+#region Ventas
+$app->group('/ventas', function (RouteCollectorProxy $group) {
+  $group->put('/estado', \VentasController::class . ':modificarUno');
+})->add(\MWAccesos::class . ':soloAdministradores')
   ->add(\MWAutenticar::class . ':verificarUsuario');
 #endregion
 
@@ -145,9 +170,16 @@ $app->group('/pedidos', function (RouteCollectorProxy $group) {
 $app->group('/informesEmpleados', function (RouteCollectorProxy $group) {
   $group->post('/usuariosLog', \UsuariosLogController::class . ':traerLosLogin');
   $group->get('/sector', \PedidoUsuarioController::class . ':operacionesPorSector'); //TODO: Falta buscar por fecha u horario
-  $group->get('/sectorPorEmpleado/{sectorId}', \PedidoUsuarioController::class . ':operacionesPorSectorEmpleado'); // TODO:: Falta buscar por fecha u horario
+  $group->get('/sectorPorEmpleado/', \PedidoUsuarioController::class . ':operacionesPorSectorEmpleado'); // TODO:: Falta buscar por fecha u horario
   $group->get('/operacionesPorEmpleado', \PedidoUsuarioController::class . ':operacionesByEmpleado'); // TODO: Falta buscar por fecha u horario
-})->add(\MWAccesos::class . ':soloAdministradores')->add(\MWAutenticar::class . ':verificarUsuario');
+})->add(\MWAccesos::class . ':soloAdministradores')
+  ->add(\MWAutenticar::class . ':verificarUsuario');
+#endregion
+
+#region Encuestas
+$app->group('/encuestas', function (RouteCollectorProxy $group) {
+  $group->post('/', \EncuestasController::class . ':CargarUno');
+});
 #endregion
 $app->get('[/]', function (Request $request, Response $response) {
   $response->getBody()->write("Slim Framework 4 PHP");

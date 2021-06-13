@@ -2,10 +2,14 @@
 
 use App\Models\Mesa;
 use App\Models\Pedido;
+use App\Models\Ventas;
+use App\Models\PedidoUsuario;
+use App\Models\Venta;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 require_once './models/Mesa.php';
+require_once './models/Ventas.php';
 require_once './interfaces/IApiUsable.php';
 class MesaController implements IApiUsable
 {
@@ -14,8 +18,7 @@ class MesaController implements IApiUsable
         $datosIngresados = $request->getParsedBody()["body"];
         if (
             !isset($datosIngresados["estado"]) ||
-            !isset($datosIngresados["mesaId"]) ||
-            !isset($datosIngresados["pedidoId"])
+            !isset($datosIngresados["mesaId"])
         ) {
             $error = json_encode(array("Error" => "Datos incompletos"));
             $response->getBody()->write($error);
@@ -25,15 +28,31 @@ class MesaController implements IApiUsable
         }
         try {
             $id = $datosIngresados["mesaId"];
-            $pedidoId = $datosIngresados["pedidoId"];
             $nuevoEstado = $datosIngresados["estado"];
             $mesaModificado = Mesa::where("Id", "=", $id)->first();
             $mesaModificado->EstadoMesaId = $nuevoEstado;
+            $codigoPedido = $datosIngresados["codigoPedido"] ?? -1;
             if ($mesaModificado->save()) {
-                if ($mesaModificado->Id == 2) {
-                    $pedidoModificado = Pedido::where("Id", "=", $pedidoId)->first();
-                    $pedidoModificado->HorarioDeEntrega = date("G:i:s");
-                    $pedidoModificado->save();
+                if ($mesaModificado->EstadoMesaId == 2) {
+                    $pedidosAModificado = Pedido::all()->where("CodigoPedido", "=", $codigoPedido);
+                    foreach ($pedidosAModificado as $pedido) {
+                        $pedido->HorarioDeEntrega = date("G:i:s");
+                        PedidoUsuario::where("Pedido_id", $pedido->Id)
+                            ->update(["Entregado" => 1]);
+                        $pedido->save();
+                    }
+                } else if ($mesaModificado->EstadoMesaId == 3) {
+                    $pedidosACobrar = Pedido::all()->where("CodigoPedido", "=", $codigoPedido);
+                    $importe = 0;
+                    foreach ($pedidosACobrar as $pedido) {
+                        $importe += $pedido->Importe;
+                    }
+                    $newVenta = new Ventas();
+                    $newVenta->mesa_id = $id;
+                    $newVenta->importe = $importe;
+                    $newVenta->fecha = date("Y-m-d");
+                    $newVenta->Pagado = false;
+                    $newVenta->save();
                 }
                 $datos = json_encode(array("Resultado" => "Modificado con exito"));
                 $response->getBody()->write($datos);

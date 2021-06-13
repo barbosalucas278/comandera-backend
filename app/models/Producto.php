@@ -21,4 +21,9 @@ class Producto extends Model
         'Precio'
     ];
     protected $dateFormat = 'Y-m-d';
+
+    public function pedido()
+    {
+        return $this->hasMay(Pedido::class, 'producto_id');
+    }
 }
