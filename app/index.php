@@ -140,6 +140,15 @@ $app->group('/productos', function (RouteCollectorProxy $group) {
 
 #region PEDIDOS
 $app->group('/pedidos', function (RouteCollectorProxy $group) {
+  $group->get('/productosVendidos/{busqueda}', \PedidosController::class . ':ProductosVendidos')
+    ->add(\MWAccesos::class . ':soloAdministradores'); //
+
+  $group->get('/fueraDeTiempo', \PedidosController::class . ':PedidosFueraDeTiempo')
+    ->add(\MWAccesos::class . ':soloAdministradores'); //
+
+  $group->get('/cancelados', \PedidosController::class . ':PedidosCancelados')
+    ->add(\MWAccesos::class . ':soloAdministradores'); //
+
   $group->get('[/]', \PedidosController::class . ':traerTodos');
 
   $group->get('/sector/{sectorId}', \PedidosController::class . ':traerPendientesPorSector');
@@ -167,12 +176,12 @@ $app->group('/ventas', function (RouteCollectorProxy $group) {
   ->add(\MWAutenticar::class . ':verificarUsuario');
 #endregion
 
-#region INFORMES EMPLEADOS
+#region INFORMES 
 $app->group('/informesEmpleados', function (RouteCollectorProxy $group) {
-  $group->post('/usuariosLog', \UsuariosLogController::class . ':traerLosLogin');
-  $group->get('/sector', \PedidoUsuarioController::class . ':operacionesPorSector'); //TODO: Falta buscar por fecha u horario
+  $group->get('/usuariosLog', \UsuariosLogController::class . ':traerLosLogin'); //
+  $group->get('/sector', \PedidoUsuarioController::class . ':operacionesPorSector'); //
   $group->get('/sectorPorEmpleado', \PedidoUsuarioController::class . ':operacionesPorSectorEmpleado'); //
-  $group->get('/operacionesPorEmpleado', \PedidoUsuarioController::class . ':operacionesByEmpleado'); // TODO: Falta buscar por fecha u horario
+  $group->get('/operacionesPorEmpleado', \PedidoUsuarioController::class . ':operacionesByEmpleado'); // 
 })->add(\MWAccesos::class . ':soloAdministradores')
   ->add(\MWAutenticar::class . ':verificarUsuario');
 #endregion

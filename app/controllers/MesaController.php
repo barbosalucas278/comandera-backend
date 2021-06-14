@@ -16,6 +16,7 @@ class MesaController implements IApiUsable
     public function CambiarEstado(Request $request, Response $response, array $args)
     {
         $datosIngresados = $request->getParsedBody()["body"];
+        $idMozo = $request->getParsedBody()["token"]->Id;
         if (
             !isset($datosIngresados["estado"]) ||
             !isset($datosIngresados["mesaId"])
@@ -38,7 +39,7 @@ class MesaController implements IApiUsable
                     foreach ($pedidosAModificado as $pedido) {
                         $pedido->HorarioDeEntrega = date("G:i:s");
                         PedidoUsuario::where("Pedido_id", $pedido->Id)
-                            ->update(["Entregado" => 1]);
+                            ->update(["Entregado" => 1, "usuario_Id" => $idMozo]);
                         $pedido->save();
                     }
                 } else if ($mesaModificado->EstadoMesaId == 3) {

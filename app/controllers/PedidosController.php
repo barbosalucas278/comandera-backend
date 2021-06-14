@@ -304,4 +304,107 @@ class PedidosController implements IApiUsable
         }
         return $cantidadPedidosPendientes;
     }
+    public function PedidosFueraDeTiempo(Request $request, Response $response, array $args)
+    {
+        try {
+
+            $datos = $request->getQueryParams();
+
+            $fechaInicio = ($datos["fechaInicio"] ?? date_format(new DateTime(), "Y-m-d"));
+            $fechaFin = ($datos["fechaFin"] ?? date_format(new DateTime(), "Y-m-d"));
+            //Validación de datosIngresados
+
+            $pedidos = Capsule::select('SELECT * FROM Pedido WHERE Eliminado is null AND HorarioDeEntrega > HorarioEstipulado AND FechaCreacion >= ? AND FechaCreacion <= ?', [$fechaInicio, $fechaFin]);
+            $datos = json_encode($pedidos);
+            $response->getBody()->write($datos);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(200);
+        } catch (Exception $ex) {
+            $error = $ex->getMessage();
+            $datosError = json_encode(array("Error" => $error));
+            $response->getBody()->write($datosError);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+    }
+    public function PedidosCancelados(Request $request, Response $response, array $args)
+    {
+        try {
+
+            $datos = $request->getQueryParams();
+
+            $fechaInicio = ($datos["fechaInicio"] ?? date_format(new DateTime(), "Y-m-d"));
+            $fechaFin = ($datos["fechaFin"] ?? date_format(new DateTime(), "Y-m-d"));
+            //Validación de datosIngresados
+
+            $pedidos = Capsule::select('SELECT * FROM Pedido WHERE Eliminado = 1 AND FechaCreacion >= ? AND FechaCreacion <= ?', [$fechaInicio, $fechaFin]);
+            $datos = json_encode($pedidos);
+            $response->getBody()->write($datos);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(200);
+        } catch (Exception $ex) {
+            $error = $ex->getMessage();
+            $datosError = json_encode(array("Error" => $error));
+            $response->getBody()->write($datosError);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+    }
+    public function ProductosVendidos(Request $request, Response $response, array $args)
+    {
+        try {
+            if (!isset($args["busqueda"]) || ($args["busqueda"] != "mayor" && $args["busqueda"] != "menor")) {
+                $error = json_encode(array("Error" => "Datos incorrectos"));
+                $response->getBody()->write($error);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(404);
+            }
+            $busqueda = $args["busqueda"];
+            $datos = $request->getQueryParams();
+
+            $fechaInicio = ($datos["fechaInicio"] ?? date_format(new DateTime(), "Y-m-d"));
+            $fechaFin = ($datos["fechaFin"] ?? date_format(new DateTime(), "Y-m-d"));
+            //Validación de datosIngresados
+            if ($busqueda == "mayor") {
+
+                $producto = Capsule::table("Pedido")
+                    ->select(Capsule::raw('SUM(Cantidad) as cantidad_total, producto_id'))
+                    ->where("FechaCreacion", ">=", $fechaInicio)
+                    ->where("FechaCreacion", "<=", $fechaFin)
+                    ->groupBy("producto_id")
+                    ->orderByDesc("cantidad_total")
+                    ->limit(1)
+                    ->get();
+            } else if ($busqueda == "menor") {
+                $producto = Capsule::table("Pedido")
+                    ->select(Capsule::raw('SUM(Cantidad) as cantidad_total, producto_id'))
+                    ->where("FechaCreacion", ">=", $fechaInicio)
+                    ->where("FechaCreacion", "<=", $fechaFin)
+                    ->groupBy("producto_id")
+                    ->orderBy("cantidad_total", "asc")
+                    ->limit(1)
+                    ->get();
+            } else {
+                $producto = Capsule::table("Pedido")
+                    ->select(Capsule::raw('SUM(Cantidad) as cantidad_total, producto_id'))
+                    ->where("FechaCreacion", ">=", $fechaInicio)
+                    ->where("FechaCreacion", "<=", $fechaFin)
+                    ->groupBy("producto_id")
+                    ->orderBy("cantidad_total", "asc")
+                    ->get();
+            }
+
+            $datos = json_encode($producto);
+            $response->getBody()->write($datos);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(200);
+        } catch (Exception $ex) {
+            $error = $ex->getMessage();
+            $datosError = json_encode(array("Error" => $error));
+            $response->getBody()->write($datosError);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+    }
 }
