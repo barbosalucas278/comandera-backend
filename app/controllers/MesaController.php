@@ -124,6 +124,9 @@ class MesaController implements IApiUsable
                     ->limit(1)
                     ->get();
             }
+            if (count($mesas) == 0) {
+                throw new Exception("No se encontraron Logs");
+            }
             $datos = json_encode($mesas);
             $response->getBody()->write($datos);
             return $response
@@ -173,6 +176,9 @@ class MesaController implements IApiUsable
                     ->limit(1)
                     ->get();
             }
+            if (count($mesas) == 0) {
+                throw new Exception("No se encontraron Logs");
+            }
             $datos = json_encode($mesas);
             $response->getBody()->write($datos);
             return $response
@@ -209,7 +215,9 @@ class MesaController implements IApiUsable
                 ->where("Pagado", "=", 1)
                 ->where("mesa_id", "=", $idMesa)
                 ->get();
-
+            if (count($mesas) == 0) {
+                throw new Exception("No se encontraron Logs");
+            }
             $datos = json_encode($mesas);
             $response->getBody()->write($datos);
             return $response
@@ -257,6 +265,9 @@ class MesaController implements IApiUsable
                     ->groupBy("mesa_id")
                     ->limit($limit)
                     ->get();
+            }
+            if (count($mesas) == 0) {
+                throw new Exception("No se encontraron Logs");
             }
             $datos = json_encode($mesas);
             $response->getBody()->write($datos);

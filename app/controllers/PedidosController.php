@@ -132,6 +132,9 @@ class PedidosController implements IApiUsable
                     "Cantidad de pedidos listos" => $cantidadDePedidosListos
                 ));
             }
+            if (count($pedidosPorCodigo) == 0) {
+                throw new Exception("No se encontraron Logs");
+            }
             $datos = json_encode($pedidosPorCodigo);
             $response->getBody()->write($datos);
             return $response
@@ -315,6 +318,9 @@ class PedidosController implements IApiUsable
             //Validación de datosIngresados
 
             $pedidos = Capsule::select('SELECT * FROM Pedido WHERE Eliminado is null AND HorarioDeEntrega > HorarioEstipulado AND FechaCreacion >= ? AND FechaCreacion <= ?', [$fechaInicio, $fechaFin]);
+            if (count($pedidos) == 0) {
+                throw new Exception("No se encontraron Logs");
+            }
             $datos = json_encode($pedidos);
             $response->getBody()->write($datos);
             return $response
@@ -338,6 +344,9 @@ class PedidosController implements IApiUsable
             //Validación de datosIngresados
 
             $pedidos = Capsule::select('SELECT * FROM Pedido WHERE Eliminado = 1 AND FechaCreacion >= ? AND FechaCreacion <= ?', [$fechaInicio, $fechaFin]);
+            if (count($pedidos) == 0) {
+                throw new Exception("No se encontraron Logs");
+            }
             $datos = json_encode($pedidos);
             $response->getBody()->write($datos);
             return $response
@@ -394,7 +403,9 @@ class PedidosController implements IApiUsable
                     ->orderBy("cantidad_total", "asc")
                     ->get();
             }
-
+            if (count($producto) == 0) {
+                throw new Exception("No se encontraron Logs");
+            }
             $datos = json_encode($producto);
             $response->getBody()->write($datos);
             return $response
