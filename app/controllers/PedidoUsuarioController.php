@@ -14,17 +14,21 @@ class PedidoUsuarioController
     public function OperacionesPorSector(Request $request, Response $response, array $args)
     {
         try {
-            $fechaInicio = ($datos["fechaInicio"] ?? date_format(new DateTime(), 'Y-m-d\TH:i:s.u') . "Z");
-            $fechaFin = ($datos["fechaFin"] ?? date_format(new DateTime(), 'Y-m-d\TH:i:s.u')) . "Z";
-            var_dump($fechaInicio);
+            $datos = $request->getQueryParams();
+            $fechaInicio = ($datos["fechaInicio"] ?? date_format(new DateTime(), "Y-m-d"));
+            $fechaFin = ($datos["fechaFin"] ?? date_format(new DateTime(), "Y-m-d"));
 
-            $pedidosUsuario = new PedidoUsuario();
-            $pedidosUsuario = $pedidosUsuario
-                ->where("Entregado", "=", 1)
-                ->where("FechaCreacion", ">=", $fechaInicio)
+            $pedidosUsuario = Capsule::table("PedidoUsuario")
+                ->where("PedidoUsuario.FechaCreacion", ">=", $fechaInicio)
+                ->where("PedidoUsuario.FechaCreacion", "<=", $fechaFin)
+                ->where("PedidoUsuario.Entregado", "=", true)
                 ->get();
 
-            $datos = json_encode($pedidosUsuario);
+            if ($pedidosUsuario->count() == 0) {
+                $datos = json_encode(array("Resultado" => "No se encontraron datos para la consulta"));
+            } else {
+                $datos = json_encode($pedidosUsuario);
+            }
             $response->getBody()->write($datos);
             return $response
                 ->withHeader('Content-Type', 'application/json')
@@ -39,9 +43,15 @@ class PedidoUsuarioController
     public function operacionesByEmpleado(Request $request, Response $response, array $args)
     {
         try {
-            $listaDeUsuariosConSusPedidos = Usuario::all();
-            $cantidadDePedidosPorUsuario = $this->CantidadPedidosPorUsuario($listaDeUsuariosConSusPedidos);
+            $datos = $request->getQueryParams();
+            $fechaInicio = ($datos["fechaInicio"] ?? date_format(new DateTime(), "Y-m-d"));
+            $fechaFin = ($datos["fechaFin"] ?? date_format(new DateTime(), "Y-m-d"));
+
+            $listaDeUsuariosConSusPedidos = Usuario::all()
+                ->where("SectorId", "!=", 6);
+            $cantidadDePedidosPorUsuario = $this->CantidadPedidosPorUsuario($listaDeUsuariosConSusPedidos, $fechaInicio, $fechaFin);
             $datos = json_encode($cantidadDePedidosPorUsuario);
+
             $response->getBody()->write($datos);
             return $response
                 ->withHeader('Content-Type', 'application/json')
@@ -53,14 +63,16 @@ class PedidoUsuarioController
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
     }
-    private function CantidadPedidosPorUsuario($listaDeUsuarios)
+    private function CantidadPedidosPorUsuario($listaDeUsuarios, $fechaInicio, $fechaFin)
     {
         $listaNueva = collect();
         foreach ($listaDeUsuarios as $usuario) {
             $contador = 0;
             $usuarioId = $usuario["Id"];
             foreach ($usuario->pedidosUsuarios as $pedido) {
-                $contador++;
+                if ($pedido->FechaCreacion >= $fechaInicio && $pedido->FechaCracion <= $fechaFin) {
+                    $contador++;
+                }
             }
             $listaNueva->push(array("usuario_id" => $usuarioId, "cantidad_operaciones" => $contador));
         }
@@ -75,7 +87,7 @@ class PedidoUsuarioController
                 $contador = 0;
                 $usuarioId = $usuario["Id"];
                 foreach ($usuario->pedidosUsuarios as $pedido) {
-                    if (date_format($pedido->FechaCreacion, "Y-m-d") >= $fechaInicio && date_format($pedido->FechaCreacion, "Y-m-d") <= $fechaFin) {
+                    if ($pedido->FechaCreacion >= $fechaInicio && $pedido->FechaCreacion <= $fechaFin) {
                         $contador++;
                     }
                 }
@@ -92,7 +104,6 @@ class PedidoUsuarioController
             $id = $datos["sectorId"];
             $fechaInicio = ($datos["fechaInicio"] ?? date_format(new DateTime(), "Y-m-d"));
             $fechaFin = ($datos["fechaFin"] ?? date_format(new DateTime(), "Y-m-d"));
-
             $cantidadDePedidosPorUsuario = $this->CantidadPedidosPorUsuarioSector($id, $fechaInicio, $fechaFin);
             $datos = json_encode($cantidadDePedidosPorUsuario);
             $response->getBody()->write($datos);
