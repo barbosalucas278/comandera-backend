@@ -39,6 +39,7 @@ class PedidosController implements IApiUsable
                 $this->CalcularHoras($pedidoModificado);
                 $this->ActualizarHorarioEstimado($pedidoModificado->CodigoPedido, $tiempoEstimado);
             }
+            $pedidoModificado->FechaModificacion = date("Y-m-d");
             if ($pedidoModificado->save()) {
                 #region Guardo el registro en tabla de relacion PedidoUsuario
                 //TODO:Si cambia a listo para servir agregar marca de uso en pedidousuario de entregado a tiempo
@@ -46,6 +47,7 @@ class PedidosController implements IApiUsable
                 $newPedidoUsuario = new PedidoUsuario();
                 $newPedidoUsuario->Usuario_Id = $UsuarioId;
                 $newPedidoUsuario->Pedido_Id = $pedidoModificado->Id;
+                $newPedidoUsuario->FechaCreacion = date("Y-m-d");
                 $newPedidoUsuario->save();
                 #endregion
                 $cantidadDePedidosPendientes = $this->EstadoDelPedidoCompleto($pedidoModificado->CodigoPedido);
@@ -81,6 +83,7 @@ class PedidosController implements IApiUsable
         $pedidosEnComun = Pedido::all()->where("CodigoPedido", "=", $codigoPedido);
         foreach ($pedidosEnComun as $pedido) {
             $pedido->HorarioEstipulado = $tiempoMaximo;
+            $pedido->FechaModificacion = date("Y-m-d");
             $pedido->save();
         }
     }
@@ -250,6 +253,7 @@ class PedidosController implements IApiUsable
                 $newPedido->Importe = $this->CalcularImporte($productosId[$i], $cantidades[$i]);
                 $newPedido->NombreCliente = $nombreCliente;
                 $newPedido->Foto = $urlFoto;
+                $newPedido->FechaCreacion = date("Y-m-d");
                 $newPedido->HorarioCreacion = $horarioCreacion;
                 $newPedido->save();
             }

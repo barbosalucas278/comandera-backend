@@ -12,9 +12,9 @@ class Pedido extends Model
     protected $primaryKey = 'Id';
     protected $table = 'Pedido';
     public $incrementing = true;
-    public $timestamps = true;
-    const CREATED_AT = 'FechaCreacion';
-    const UPDATED_AT = 'FechaModificacion';
+    public $timestamps = false;
+    /*const CREATED_AT = 'FechaCreacion';
+    const UPDATED_AT = 'FechaModificacion';*/
     const DELETED_AT = 'Eliminado';
 
     protected $fillable = [
@@ -25,6 +25,8 @@ class Pedido extends Model
         'producto_id',
         'Cantidad',
         'Importe',
+        'FechaCreacion',
+        'FechaModificacion',
         'HorarioCreacion',
         'HorarioInicio',
         'HorarioEstipulado',

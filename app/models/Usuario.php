@@ -12,13 +12,13 @@ class Usuario extends Model
     protected $primaryKey = 'Id';
     protected $table = 'Usuario';
     public $incrementing = true;
-    public $timestamps = true;
-    const CREATED_AT = 'FechaCreacion';
-    const UPDATED_AT = 'FechaUltimaModificacion';
+    public $timestamps = false;
+    /*const CREATED_AT = 'FechaCreacion';
+    const UPDATED_AT = 'FechaUltimaModificacion';*/
     const DELETED_AT = 'FechaBaja';
     protected $fillable = [
         'SectorId', 'Nombre', 'Apellido', 'Mail',
-        'UsuarioAlta', 'Tipousuario', 'EstadoUsuarioId'
+        'UsuarioAlta', 'Tipousuario', 'EstadoUsuarioId', 'FechaCreacion', 'FechaUltimaModificacion'
     ];
     protected $dateFormat = 'Y-m-d';
     public function pedidosUsuarios()

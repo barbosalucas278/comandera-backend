@@ -12,12 +12,12 @@ class PedidoUsuario extends Model
     protected $primaryKey = 'Id';
     protected $table = 'PedidoUsuario';
     public $incrementing = true;
-    public $timestamps = true;
-    const CREATED_AT = 'FechaCreacion';
-    const UPDATED_AT = 'FechaModificacion';
+    public $timestamps = false;
+    /*const CREATED_AT = 'FechaCreacion';
+    const UPDATED_AT = 'FechaModificacion';*/
     const DELETED_AT = 'Eliminado';
     protected $fillable = [
-        'Pedido_Id', 'usuario_Id', 'Entregado'
+        'Pedido_Id', 'usuario_Id', 'Entregado', 'FechaCreacion', 'FechaModificacion'
     ];
     protected $dateFormat = 'Y-m-d';
     // public function pedidos()
