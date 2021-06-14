@@ -16,7 +16,8 @@ class Encuesta extends Model
     const DELETED_AT = 'Eliminado';
     protected $dateFormat = 'Y-m-d';
     protected $fillable = [
-        'mesa_id', 'Restaurante', 'Mozo', 'Comida', 'Comentario', 'FechaCreacion', 'HorarioCreacion', 'Eliminado'
+        'mesa_id', 'Restaurante', 'Mozo', 'Comida', 'Comentario',
+        'FechaCreacion', 'HorarioCreacion', 'Eliminado', 'Puntuacion'
     ];
 
     public function mesas()

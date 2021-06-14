@@ -11,6 +11,53 @@ require_once './models/Encuesta.php';
 require_once './models/EncuestaMesa.php';
 class EncuestasController implements IApiUsable
 {
+    public function ComentariosPorMesa(Request $request, Response $response, array $args)
+    {
+        try {
+            $datos = $request->getQueryParams();
+            if (!isset($args["mesaId"]) || ($datos["busqueda"] != "mayor" && $datos["busqueda"] != "menor")) {
+                $error = json_encode(array("Error" => "Datos incorrectos"));
+                $response->getBody()->write($error);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(404);
+            }
+            $mesaId = $args["mesaId"];
+            $busqueda = $datos["busqueda"];
+            $fechaInicio = ($datos["fechaInicio"] ?? date_format(new DateTime(), "Y-m-d"));
+            $fechaFin = ($datos["fechaFin"] ?? date_format(new DateTime(), "Y-m-d"));
+            $limit = ($datos["limit"] ?? 10);
+
+            //Validación de datosIngresados
+            if ($busqueda == "mayor") {
+                $mesas = Capsule::table("Encuesta")
+                    ->where("FechaCreacion", ">=", $fechaInicio)
+                    ->where("FechaCreacion", "<=", $fechaFin)
+                    ->where("mesa_id", "=", $mesaId)
+                    ->orderByDesc("Puntuacion")
+                    ->limit($limit)
+                    ->get();
+            } else if ($busqueda == "menor") {
+                $mesas = Capsule::table("Encuesta")
+                    ->where("FechaCreacion", ">=", $fechaInicio)
+                    ->where("FechaCreacion", "<=", $fechaFin)
+                    ->where("mesa_id", "=", $mesaId)
+                    ->orderBy("Puntuacion", "asc")
+                    ->limit($limit)
+                    ->get();
+            }
+            $datos = json_encode($mesas);
+            $response->getBody()->write($datos);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(200);
+        } catch (Exception $ex) {
+            $error = $ex->getMessage();
+            $datosError = json_encode(array("Error" => $error));
+            $response->getBody()->write($datosError);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+    }
     public function CargarUno(Request $request, Response $response, array $args)
     {
         try {
@@ -40,6 +87,7 @@ class EncuestasController implements IApiUsable
             $newEncuesta->Restaurante = $puntuacionRestaurante;
             $newEncuesta->Mozo = $puntuacionMozo;
             $newEncuesta->Comida = $puntuacionComida;
+            $newEncuesta->Puntuacion = $this->CalcularPuntuacion($puntuacionRestaurante, $puntuacionMozo, $puntuacionComida);
             $newEncuesta->Comentario = $comentario;
             $newEncuesta->FechaCreacion = date("Y-m-d");
             $newEncuesta->HorarioCreacion = date("G:i:s");
@@ -64,6 +112,10 @@ class EncuestasController implements IApiUsable
                 ->withHeader('Content-Type', 'application/json')
                 ->withStatus(500);
         }
+    }
+    private function CalcularPuntuacion($restaurante, $mozo, $comida)
+    {
+        return ($restaurante + $mozo + $comida);
     }
     public function TraerUno(Request $request, Response $response, array $args)
     {
