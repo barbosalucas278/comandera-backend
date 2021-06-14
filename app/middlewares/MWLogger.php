@@ -18,6 +18,7 @@ class MWLogger
                 $log = new UsuarioLog();
                 $log->Usuario_Id = $dataResponse->Id;
                 $log->HoraDeIngreso = date("G:i:s");
+                $log->FechaDeIngreso = date("Y-m-d");
                 $log->save();
             }
             return $response;

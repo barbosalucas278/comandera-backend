@@ -14,8 +14,8 @@ use Slim\Routing\RouteContext;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 require __DIR__ . '/../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__); // "../"
-$dotenv->safeLoad(); // load()
+$dotenv = Dotenv\Dotenv::createImmutable("../"); // "../"  __DIR__
+$dotenv->load(); // load() safeLoad
 
 require_once './middlewares/MWAutenticar.php';
 require_once './middlewares/MWAccesos.php';
@@ -73,6 +73,7 @@ $capsule->addConnection([
   'charset'   => 'utf8',
   'collation' => 'utf8_unicode_ci',
   'prefix'    => '',
+  'strict' => false,
 ]);
 
 $capsule->setAsGlobal();
@@ -170,7 +171,7 @@ $app->group('/ventas', function (RouteCollectorProxy $group) {
 $app->group('/informesEmpleados', function (RouteCollectorProxy $group) {
   $group->post('/usuariosLog', \UsuariosLogController::class . ':traerLosLogin');
   $group->get('/sector', \PedidoUsuarioController::class . ':operacionesPorSector'); //TODO: Falta buscar por fecha u horario
-  $group->get('/sectorPorEmpleado/', \PedidoUsuarioController::class . ':operacionesPorSectorEmpleado'); // TODO:: Falta buscar por fecha u horario
+  $group->get('/sectorPorEmpleado', \PedidoUsuarioController::class . ':operacionesPorSectorEmpleado'); //
   $group->get('/operacionesPorEmpleado', \PedidoUsuarioController::class . ':operacionesByEmpleado'); // TODO: Falta buscar por fecha u horario
 })->add(\MWAccesos::class . ':soloAdministradores')
   ->add(\MWAutenticar::class . ':verificarUsuario');

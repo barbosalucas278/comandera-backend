@@ -6,7 +6,7 @@ use App\Models\PedidoUsuario;
 use App\Models\Usuario;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 class PedidoUsuarioController
 {
@@ -14,7 +14,17 @@ class PedidoUsuarioController
     public function OperacionesPorSector(Request $request, Response $response, array $args)
     {
         try {
-            $datos = json_encode(PedidoUsuario::all()->load("usuario")->groupBy("usuario.SectorId"));
+            $fechaInicio = ($datos["fechaInicio"] ?? date_format(new DateTime(), 'Y-m-d\TH:i:s.u') . "Z");
+            $fechaFin = ($datos["fechaFin"] ?? date_format(new DateTime(), 'Y-m-d\TH:i:s.u')) . "Z";
+            var_dump($fechaInicio);
+
+            $pedidosUsuario = new PedidoUsuario();
+            $pedidosUsuario = $pedidosUsuario
+                ->where("Entregado", "=", 1)
+                ->where("FechaCreacion", ">=", $fechaInicio)
+                ->get();
+
+            $datos = json_encode($pedidosUsuario);
             $response->getBody()->write($datos);
             return $response
                 ->withHeader('Content-Type', 'application/json')

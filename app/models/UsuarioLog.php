@@ -12,12 +12,10 @@ class UsuarioLog extends Model
     protected $primaryKey = 'Id';
     protected $table = 'UsuarioLog';
     public $incrementing = true;
-    public $timestamps = true;
-    const CREATED_AT = 'FechaDeIngreso';
-    const UPDATED_AT = 'FechaModificacion';
+    public $timestamps = false;
     const DELETED_AT = 'Eliminado';
     protected $fillable = [
-        'usuario_id', 'HoraDeIngreso'
+        'usuario_id', 'HoraDeIngreso', 'FechaDeIngreso', 'FechaModificacion'
     ];
     protected $dateFormat = 'Y-m-d';
     public function usuarios()

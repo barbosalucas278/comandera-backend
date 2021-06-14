@@ -103,6 +103,7 @@ class ProductosController implements IApiUsable
           if ($this->Equals($prodNuevo, $prodViejo)) {
             $this->ModificarStock($prodNuevo->Stock, $prodViejo);
             $this->ModificarPrecio($prodNuevo->Precio, $prodViejo);
+            $prodViejo->FechaUltimaModificacion = date("Y-m-d");
             $prodViejo->save();
             $flagExists = 1;
             continue;
@@ -115,6 +116,7 @@ class ProductosController implements IApiUsable
           $newProducto->Nombre = $prodNuevo->Nombre;
           $newProducto->Stock = $prodNuevo->Stock;
           $newProducto->Precio = $prodNuevo->Precio;
+          $newProducto->FechaCreacion = date("Y-m-d");
           $newProducto->save();
         }
       }
@@ -229,6 +231,7 @@ class ProductosController implements IApiUsable
       $newProducto->Nombre = $nombre;
       $newProducto->Stock = $stock;
       $newProducto->Precio = $precio;
+      $newProducto->FechaCreacion = date("Y-m-d");
       if ($newProducto->save()) {
         $payload = json_encode(array("Resultado" => "Agregado"));
       }

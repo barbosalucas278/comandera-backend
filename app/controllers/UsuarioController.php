@@ -30,6 +30,7 @@ class UsuarioController implements IApiUsable
       }
       $usuarioModificado->EstadoUsuarioId = $nuevoEstado;
       $usuarioModificado->UsuarioModificacion = $nombreUsuarioModificacion;
+      $usuarioModificado->FechaUltimaModificacion = date("Y-m-d");
       if ($usuarioModificado->save()) {
         $datos = json_encode(array("Resultado" => "Modificado con exito"));
         $response->getBody()->write($datos);
@@ -79,6 +80,7 @@ class UsuarioController implements IApiUsable
       $newUsuario->SectorId = $sectorId;
       $newUsuario->Mail = $mail;
       $newUsuario->Usuarioalta = $usuarioAlta;
+      $newUsuario->FechaCreacion = date("Y-m-d");
       if ($newUsuario->save()) {
         $payload = json_encode(array("Resultado" => "Agregado"));
       }
