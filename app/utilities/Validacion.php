@@ -19,7 +19,7 @@ class Validacion
     }
     public static function EsCodigoDeBarras($codigo)
     {
-        if (isset($codigo) && is_string($codigo) && strlen($codigo) == 8) {
+        if (isset($codigo) && is_string($codigo) && strlen($codigo) == 5) {
             $regEx = "/\d/m";
             return preg_match_all($regEx, $codigo);
         }

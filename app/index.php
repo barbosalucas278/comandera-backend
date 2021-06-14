@@ -14,8 +14,8 @@ use Slim\Routing\RouteContext;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 require __DIR__ . '/../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable("../"); // "../"  __DIR__
-$dotenv->load(); // load() safeLoad
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__); // "../"  __DIR__
+$dotenv->safeLoad(); // load() safeLoad
 
 require_once './middlewares/MWAutenticar.php';
 require_once './middlewares/MWAccesos.php';
@@ -109,6 +109,18 @@ $app->group('/mesas', function (RouteCollectorProxy $group) {
 
   $group->get('/{id}', \MesaController::class . ':traerUno');
 
+  $group->get('/usos/{busqueda}', \MesaController::class . ':UsoDeMesas')
+    ->add(\MWAccesos::class . ':soloAdministradores');
+
+  $group->get('/ventas/{busqueda}', \MesaController::class . ':VentasMesas')
+    ->add(\MWAccesos::class . ':soloAdministradores');
+
+  $group->get('/facturas/{busqueda}', \MesaController::class . ':FacturasMesas')
+    ->add(\MWAccesos::class . ':soloAdministradores');
+
+  $group->get('/facturasPorMesa/{id}', \MesaController::class . ':FacturasPorMesas')
+    ->add(\MWAccesos::class . ':soloAdministradores');
+
   $group->post('[/]', \MesaController::class . ':CargarUno')
     ->add(\MWAccesos::class . ':soloAdministradores');
 
@@ -188,6 +200,7 @@ $app->group('/informesEmpleados', function (RouteCollectorProxy $group) {
 
 #region Encuestas
 $app->group('/encuestas', function (RouteCollectorProxy $group) {
+  $group->get('/comentarios/{mesaId}', \EncuestasController::class . ':ComentariosPorMesa'); //
   $group->post('/', \EncuestasController::class . ':CargarUno');
 });
 #endregion
