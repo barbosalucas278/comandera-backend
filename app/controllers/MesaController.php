@@ -40,7 +40,7 @@ class MesaController implements IApiUsable
                     foreach ($pedidosAModificado as $pedido) {
                         $pedido->HorarioDeEntrega = date("G:i:s");
                         PedidoUsuario::where("Pedido_id", $pedido->Id)
-                            ->update(["Entregado" => 1, "usuario_Id" => $idMozo]);
+                            ->update(["Entregado" => 1]);
                         $pedido->save();
                     }
                 } else if ($mesaModificado->EstadoMesaId == 3) {
