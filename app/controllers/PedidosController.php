@@ -123,6 +123,7 @@ class PedidosController implements IApiUsable
         try {
             $pedidosPorCodigo = Pedido::all()
                 ->where("EstadoPedidoId", "=", 3)
+                ->where("HorarioDeEntrega", "=", null)
                 ->groupBy('CodigoPedido');
             foreach ($pedidosPorCodigo as $codigo => $value) {
                 $cantidadDePedidosListos = Capsule::table("Pedido")->where("CodigoPedido", "=", $codigo)->where("EstadoPedidoId", "=", 3)->count();
